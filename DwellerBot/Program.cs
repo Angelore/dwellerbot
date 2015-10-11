@@ -1,0 +1,18 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Telegram.Bot;
+
+namespace DwellerBot
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            var db = new DwellerBot();
+            db.Run().Wait();
+        }
+    }
+}
