@@ -27,9 +27,9 @@ namespace DwellerBot.Commands
         public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("Launch time: " + _dwellerBot._launchTime.ToUniversalTime());
-            sb.AppendLine("Commands processed: " + _dwellerBot._offset);
-            sb.AppendLine("Errors: " + _dwellerBot._errorCount);
+            sb.AppendLine("Launch time: " + _dwellerBot.LaunchTime.ToUniversalTime());
+            sb.AppendLine("Commands processed: " + _dwellerBot.CommandsProcessed);
+            sb.AppendLine("Errors: " + _dwellerBot.ErrorCount);
             await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
         }
     }

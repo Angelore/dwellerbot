@@ -24,9 +24,10 @@ namespace DwellerBot
         private int _reactionImagesCount;
         private Random _rng;
 
-        internal int _offset;
-        internal DateTime _launchTime;
-        internal int _errorCount;
+        internal int Offset;
+        internal DateTime LaunchTime;
+        internal int CommandsProcessed;
+        internal int ErrorCount;
 
         private Dictionary<string, ICommand> Commands { get; } 
 
@@ -38,9 +39,10 @@ namespace DwellerBot
             //_reactionImages = _dir.EnumerateFiles().ToList();
             //_reactionImagesCount = _reactionImages.Count();
             _rng = new Random();
-            _offset = 0;
-            _errorCount = 0;
-            _launchTime = DateTime.Now;
+            Offset = 0;
+            CommandsProcessed = 0;
+            ErrorCount = 0;
+            LaunchTime = DateTime.Now;
 
             Commands = new Dictionary<string, ICommand>
             {
@@ -59,7 +61,7 @@ namespace DwellerBot
 
             while (true)
             {
-                var updates = await _bot.GetUpdates(_offset);
+                var updates = await _bot.GetUpdates(Offset);
 
                 foreach (var update in updates)
                 {
@@ -73,17 +75,18 @@ namespace DwellerBot
                             try
                             {
                                 await Commands[parsedMessage["command"]].ExecuteAsync(update, parsedMessage);
+                                CommandsProcessed++;
                             }
                             catch (Exception ex)
                             {
                                 Console.WriteLine("!> An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]);
                                 Console.WriteLine("!> Error message: {0}", ex.Message);
-                                _errorCount++;
+                                ErrorCount++;
                             }
                         }
                     }
 
-                    _offset = update.Id + 1;
+                    Offset = update.Id + 1;
                 }
 
                 await Task.Delay(1000);
@@ -131,7 +134,7 @@ namespace DwellerBot
             _file.Seek(0, SeekOrigin.Begin);
             using (var sw = new StreamWriter(_file))
             {
-                sw.WriteLine(_offset);
+                sw.WriteLine(Offset);
             }
             _file.Close();
         }
