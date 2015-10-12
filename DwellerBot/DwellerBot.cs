@@ -18,7 +18,7 @@ namespace DwellerBot
     {
         private const string BotName = @"@DwellerBot";
 
-        private readonly Api _bot;// = new Api("130434822:AAH91ldF8GICSVQjJS0Jz_5b2RLaZ5KscRk");
+        private readonly Api _bot;
 
         private Random _rng;
 
