@@ -24,8 +24,9 @@ namespace DwellerBot
         private int _reactionImagesCount;
         private Random _rng;
 
-        protected int _offset;
-        protected DateTime _launchTime;
+        internal int _offset;
+        internal DateTime _launchTime;
+        internal int _errorCount;
 
         private Dictionary<string, ICommand> Commands { get; } 
 
@@ -38,6 +39,7 @@ namespace DwellerBot
             //_reactionImagesCount = _reactionImages.Count();
             _rng = new Random();
             _offset = 0;
+            _errorCount = 0;
             _launchTime = DateTime.Now;
 
             Commands = new Dictionary<string, ICommand>
@@ -76,6 +78,7 @@ namespace DwellerBot
                             {
                                 Console.WriteLine("!> An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]);
                                 Console.WriteLine("!> Error message: {0}", ex.Message);
+                                _errorCount++;
                             }
                         }
                     }
@@ -90,7 +93,7 @@ namespace DwellerBot
         private readonly Regex _fullCommandRegex = new Regex(@"(?<=^/\w+)@\w+"); // Returns bot name from command (/com@botname => @botname)
         private readonly Regex _commandRegex = new Regex(@"^/\w+"); // Returns command (/com => /com)
 
-        protected Dictionary<string, string> ParseCommand(string input)
+        internal Dictionary<string, string> ParseCommand(string input)
         {
             var result = new Dictionary<string, string>();
 
