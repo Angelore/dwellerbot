@@ -13,7 +13,7 @@ using Telegram.Bot;
 
 namespace DwellerBot
 {
-    public class DwellerBot:
+    public class DwellerBot
     {
         private const string BotName = @"@DwellerBot";
         private readonly Api _bot = new Api("130434822:AAEyREsiaeWIBhxPiDuKyZyheX-eHq0YGIU");
