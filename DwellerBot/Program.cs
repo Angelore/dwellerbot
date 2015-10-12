@@ -11,10 +11,8 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
-            using (var dwellerBot = new DwellerBot())
-            {
-                dwellerBot.Run().Wait();
-            }
+            var dwellerBot = new DwellerBot();
+            dwellerBot.Run().Wait();
         }
     }
 }

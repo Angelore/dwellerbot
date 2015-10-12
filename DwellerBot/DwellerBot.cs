@@ -27,7 +27,7 @@ namespace DwellerBot
 
         private Dictionary<string, ICommand> Commands { get; } 
 
-        public DwellerBot(string offsetFilePath = @"output.txt")
+        public DwellerBot()
         {
             _rng = new Random();
 
