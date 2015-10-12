@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="Commands\AskStasonCommand.cs" />
     <Compile Include="Commands\DebugCommand.cs" />
+    <Compile Include="Commands\WeatherCommand.cs" />
     <Compile Include="CurrencyContainer.cs" />
     <Compile Include="Commands\RateCommand.cs" />
     <Compile Include="DwellerBot.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Commands\StasonCommand.cs" />
+    <Compile Include="WeatherContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

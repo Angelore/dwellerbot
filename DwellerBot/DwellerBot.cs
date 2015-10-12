@@ -49,7 +49,8 @@ namespace DwellerBot
                 {@"/debug", new DebugCommand(_bot, this)},
                 {@"/rate", new RateCommand(_bot)},
                 //{@"/stason", new StasonCommand()},
-                {@"/askstason", new AskStasonCommand(_bot)}
+                {@"/askstason", new AskStasonCommand(_bot)},
+                {@"/weather", new WeatherCommand(_bot)}
             };
         }
         
