@@ -30,18 +30,18 @@ namespace DwellerBot
 
     public class Main
     {
-        public int temp { get; set; }
-        public int pressure { get; set; }
-        public int humidity { get; set; }
-        public int temp_min { get; set; }
-        public int temp_max { get; set; }
+        public double temp { get; set; }
+        public double pressure { get; set; }
+        public double humidity { get; set; }
+        public double temp_min { get; set; }
+        public double temp_max { get; set; }
     }
 
     public class Wind
     {
-        public int speed { get; set; }
-        public int deg { get; set; }
-        public int gust { get; set; }
+        public double speed { get; set; }
+        public double deg { get; set; }
+        public double gust { get; set; }
     }
 
     public class Rain
@@ -59,8 +59,8 @@ namespace DwellerBot
         public int id { get; set; }
         public float message { get; set; }
         public string country { get; set; }
-        public int sunrise { get; set; }
-        public int sunset { get; set; }
+        public double sunrise { get; set; }
+        public double sunset { get; set; }
     }
 
     public class Weather

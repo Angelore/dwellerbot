@@ -29,11 +29,11 @@ namespace DwellerBot
 
         private Dictionary<string, ICommand> Commands { get; } 
 
-        public DwellerBot(Dictionary<string, string> apiKeys)
+        public DwellerBot(Settings settings)
         {
             _rng = new Random();
 
-            _bot = new Api(apiKeys["dwellerBotKey"]);
+            _bot = new Api(settings.keys.First(x => x.name == "dwellerBotKey").value);
 
             Offset = 0;
             CommandsProcessed = 0;
@@ -46,7 +46,7 @@ namespace DwellerBot
                 {@"/rate", new RateNbrbCommand(_bot)},
                 //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
-                {@"/weather", new WeatherCommand(_bot, apiKeys["openWeatherKey"])}
+                {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)}
             };
         }
         

@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 using Telegram.Bot;
 
 namespace DwellerBot
@@ -15,23 +16,18 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
-            XDocument xdoc;
-            Dictionary<string, string> apiKeys = new Dictionary<string, string>();
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = @"DwellerBot.Resources.keys.xml";
+            var resourceName = @"DwellerBot.Resources.Settings.xml";
+            Settings settings;
             
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (StreamReader reader = new StreamReader(stream))
             {
-                string text = reader.ReadToEnd();
-                xdoc = XDocument.Parse(text);
-                foreach (var element in xdoc.Root.Elements("key"))
-                {
-                    apiKeys.Add(element.Attribute("name").Value, element.Attribute("value").Value);
-                }
+                var deserializer = new XmlSerializer(typeof(Settings));
+                settings = deserializer.Deserialize(reader) as Settings;
             }
 
-            var dwellerBot = new DwellerBot(apiKeys);
+            var dwellerBot = new DwellerBot(settings);
             dwellerBot.Run().Wait();
         }
     }
