@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DwellerBot.Commands;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace DwellerBot
 {
@@ -34,7 +35,7 @@ namespace DwellerBot
             Offset = 0;
             CommandsProcessed = 0;
             ErrorCount = 0;
-            LaunchTime = DateTime.Now;
+            LaunchTime = DateTime.Now.AddHours(3);
 
             Commands = new Dictionary<string, ICommand>
             {
@@ -54,15 +55,34 @@ namespace DwellerBot
 
             while (true)
             {
-                var updates = await _bot.GetUpdates(Offset);
+                Update[] updates = new Update[0];
+                try
+                {
+                    updates = await _bot.GetUpdates(Offset);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("!> An error has occured while receiving updates.");
+                    Console.WriteLine("!> Error message: {0}", ex.Message);
+                    ErrorCount++;
+                }
 
                 foreach (var update in updates)
                 {
                     if (update.Message.Text != null)
                     {
                         Console.WriteLine("> A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text);
-
-                        var parsedMessage = ParseCommand(update.Message.Text);
+                        Dictionary<string, string> parsedMessage = new Dictionary<string, string>();
+                        try
+                        {
+                            parsedMessage = ParseCommand(update.Message.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("!> An error has occured during message parsing.");
+                            Console.WriteLine("!> Error message: {0}", ex.Message);
+                            ErrorCount++;
+                        }
                         if (Commands.ContainsKey(parsedMessage["command"]))
                         {
                             try
