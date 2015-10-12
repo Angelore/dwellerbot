@@ -14,12 +14,15 @@ namespace DwellerBot.Commands
     class WeatherCommand : ICommand
     {
         private const string WeatherQueryUrl =
-            @"http://api.openweathermap.org/data/2.5/weather?q=Minsk,by&APPID=476bdb6ccca4a148eb8bc593d612df72&units=metric&lang=ru";
+            @"http://api.openweathermap.org/data/2.5/weather?q=Minsk,by&units=metric&lang=ru&APPID=";
+
+        private readonly string _apiKey;
         private readonly Api _bot;
 
-        public WeatherCommand(Api bot)
+        public WeatherCommand(Api bot, string apiKey)
         {
             _bot = bot;
+            _apiKey = apiKey;
         }
 
         public void Execute(Update update)
@@ -46,7 +49,7 @@ namespace DwellerBot.Commands
         public async Task<Stream> GetWeather()
         {
             var hc = new HttpClient();
-            return await hc.GetStreamAsync(WeatherQueryUrl);
+            return await hc.GetStreamAsync(WeatherQueryUrl + _apiKey);
         }
 
         public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)

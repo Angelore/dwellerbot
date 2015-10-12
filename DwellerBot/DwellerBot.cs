@@ -17,8 +17,9 @@ namespace DwellerBot
     public class DwellerBot
     {
         private const string BotName = @"@DwellerBot";
-        private readonly Api _bot = new Api("130434822:AAEyREsiaeWIBhxPiDuKyZyheX-eHq0YGIU");
-        
+
+        private readonly Api _bot;// = new Api("130434822:AAH91ldF8GICSVQjJS0Jz_5b2RLaZ5KscRk");
+
         private Random _rng;
 
         internal int Offset;
@@ -28,9 +29,11 @@ namespace DwellerBot
 
         private Dictionary<string, ICommand> Commands { get; } 
 
-        public DwellerBot()
+        public DwellerBot(Dictionary<string, string> apiKeys)
         {
             _rng = new Random();
+
+            _bot = new Api(apiKeys["dwellerBotKey"]);
 
             Offset = 0;
             CommandsProcessed = 0;
@@ -43,12 +46,13 @@ namespace DwellerBot
                 {@"/rate", new RateNbrbCommand(_bot)},
                 //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
-                {@"/weather", new WeatherCommand(_bot)}
+                {@"/weather", new WeatherCommand(_bot, apiKeys["openWeatherKey"])}
             };
         }
         
         public async Task Run()
         {
+            System.Threading.Thread.Sleep(500);
             var me = await _bot.GetMe();
 
             Console.WriteLine("{0} is online and fully functional." + Environment.NewLine, me.Username);
