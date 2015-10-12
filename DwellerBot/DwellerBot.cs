@@ -39,7 +39,7 @@ namespace DwellerBot
             Commands = new Dictionary<string, ICommand>
             {
                 {@"/debug", new DebugCommand(_bot, this)},
-                {@"/rate", new RateCommand(_bot)},
+                {@"/rate", new RateNbrbCommand(_bot)},
                 //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
                 {@"/weather", new WeatherCommand(_bot)}
