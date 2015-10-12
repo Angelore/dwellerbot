@@ -13,15 +13,11 @@ using Telegram.Bot;
 
 namespace DwellerBot
 {
-    public class DwellerBot: IDisposable
+    public class DwellerBot:
     {
         private const string BotName = @"@DwellerBot";
         private readonly Api _bot = new Api("130434822:AAEyREsiaeWIBhxPiDuKyZyheX-eHq0YGIU");
-
-        private FileStream _file;
-        private DirectoryInfo _dir;
-        private List<FileInfo> _reactionImages;
-        private int _reactionImagesCount;
+        
         private Random _rng;
 
         internal int Offset;
@@ -33,12 +29,8 @@ namespace DwellerBot
 
         public DwellerBot(string offsetFilePath = @"output.txt")
         {
-
-            _file = new FileStream(@"offset.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            //_dir = new DirectoryInfo(@"D:\Pictures\Internets\Reaction_images");
-            //_reactionImages = _dir.EnumerateFiles().ToList();
-            //_reactionImagesCount = _reactionImages.Count();
             _rng = new Random();
+
             Offset = 0;
             CommandsProcessed = 0;
             ErrorCount = 0;
@@ -128,16 +120,6 @@ namespace DwellerBot
                 result.Add("command", string.Empty);
 
             return result;
-        }
-
-        public void Dispose()
-        {
-            _file.Seek(0, SeekOrigin.Begin);
-            using (var sw = new StreamWriter(_file))
-            {
-                sw.WriteLine(Offset);
-            }
-            _file.Close();
         }
     }
 }
