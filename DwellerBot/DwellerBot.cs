@@ -46,7 +46,8 @@ namespace DwellerBot
                 {@"/rate", new RateNbrbCommand(_bot)},
                 //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
-                {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)}
+                {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)},
+                {@"/reaction", new ReactionCommand(_bot)}
             };
         }
         
