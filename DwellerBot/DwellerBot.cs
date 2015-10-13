@@ -9,7 +9,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DwellerBot.Commands;
-using DwellerBot.Utility;
+using log4net.Repository.Hierarchy;
+using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -21,19 +22,15 @@ namespace DwellerBot
 
         private readonly Api _bot;
 
-        private Random _rng;
-
         internal int Offset;
         internal DateTime LaunchTime;
         internal int CommandsProcessed;
         internal int ErrorCount;
 
-        private Dictionary<string, ICommand> Commands { get; } 
+        private Dictionary<string, ICommand> Commands { get; set; }
 
         public DwellerBot(Settings settings)
         {
-            _rng = new Random();
-
             _bot = new Api(settings.keys.First(x => x.name == "dwellerBotKey").value);
 
             Offset = 0;
@@ -52,13 +49,13 @@ namespace DwellerBot
                 {@"/rtd", new RtdCommand(_bot)}
             };
         }
-        
+
         public async Task Run()
         {
             System.Threading.Thread.Sleep(500);
             var me = await _bot.GetMe();
 
-            Logger.Info(string.Format("{0} is online and fully functional." + Environment.NewLine, me.Username));
+            Log.Logger.Debug(string.Format("{0} is online and fully functional." + Environment.NewLine, me.Username));
 
             while (true)
             {
@@ -69,11 +66,7 @@ namespace DwellerBot
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(new []
-                    {
-                        string.Format("An error has occured while receiving updates."),
-                        string.Format("Error message: {0}", ex.Message)
-                    });
+                    Log.Logger.Error(ex, "An error has occured while receiving updates");
                     ErrorCount++;
                 }
 
@@ -81,7 +74,7 @@ namespace DwellerBot
                 {
                     if (update.Message.Text != null)
                     {
-                        Logger.Info(string.Format("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text));
+                        Log.Logger.Debug(string.Format("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text));
 
                         Dictionary<string, string> parsedMessage = new Dictionary<string, string>();
                         try
@@ -90,11 +83,7 @@ namespace DwellerBot
                         }
                         catch (Exception ex)
                         {
-                            Logger.Error(new[]
-                            {
-                                string.Format("An error has occured during message parsing."),
-                                string.Format("Error message: {0}", ex.Message)
-                            });
+                            Log.Logger.Error(ex, "An error has occured during message parsing.");
                             ErrorCount++;
                         }
                         if (Commands.ContainsKey(parsedMessage["command"]))
@@ -106,11 +95,7 @@ namespace DwellerBot
                             }
                             catch (Exception ex)
                             {
-                                Logger.Error(new[]
-                                {
-                                    string.Format("An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]),
-                                    string.Format("Error message: {0}", ex.Message)
-                                });
+                                Log.Logger.Error(ex, string.Format("An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]));
                                 ErrorCount++;
                             }
                         }
