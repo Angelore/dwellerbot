@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AskStasonCommand.cs" />
+    <Compile Include="Commands\CommandBase.cs" />
     <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\RateNbrbCommand.cs" />
     <Compile Include="Commands\ReactionCommand.cs" />

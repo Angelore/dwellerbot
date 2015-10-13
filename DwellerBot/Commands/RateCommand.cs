@@ -11,22 +11,16 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class RateCommand : ICommand
+    class RateCommand : CommandBase
     {
         private const string CurrencyQueryUrl = @"https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.xchange+where+pair+=+%22USDBYR,EURBYR,RUBBYR%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-        private readonly Api _bot;
 
-        public RateCommand(Api bot)
+        public RateCommand(Api bot):base(bot)
         {
-            _bot = bot;
+            ;
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var responseStream = new StreamReader(await GetCurrencyRates());
             var currencyContainer = JsonConvert.DeserializeObject<CurrencyContainer>(responseStream.ReadToEnd());

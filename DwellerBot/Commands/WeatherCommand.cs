@@ -12,26 +12,19 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class WeatherCommand : ICommand
+    class WeatherCommand : CommandBase
     {
         private const string WeatherQueryUrl =
             @"http://api.openweathermap.org/data/2.5/weather?q=Minsk,by&units=metric&lang=ru&APPID=";
 
         private readonly string _apiKey;
-        private readonly Api _bot;
 
-        public WeatherCommand(Api bot, string apiKey)
+        public WeatherCommand(Api bot, string apiKey):base(bot)
         {
-            _bot = bot;
             _apiKey = apiKey;
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var responseStream = new StreamReader(await GetWeather());
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());

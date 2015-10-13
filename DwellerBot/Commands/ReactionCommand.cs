@@ -11,17 +11,15 @@ using Serilog;
 
 namespace DwellerBot.Commands
 {
-    class ReactionCommand : ICommand, ISaveable
+    class ReactionCommand : CommandBase, ISaveable
     {
-        private readonly Api _bot;
         private readonly List<FileInfo> _files;
         private readonly Random _rng;
         private readonly string _cacheFilePath;
         private Dictionary<string, string> _sentFiles;
 
-        public ReactionCommand(Api bot, List<string> folderNames, string cacheFilePath)
+        public ReactionCommand(Api bot, List<string> folderNames, string cacheFilePath):base(bot)
         {
-            _bot = bot;
             _rng = new Random();
             _files = new List<FileInfo>();
             foreach (var folderName in folderNames)
@@ -36,12 +34,7 @@ namespace DwellerBot.Commands
             _sentFiles = new Dictionary<string, string>();
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             if (_files.Count == 0)
             {

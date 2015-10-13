@@ -8,25 +8,18 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class SaveStateCommand : ICommand
+    class SaveStateCommand : CommandBase
     {
-        private Api _bot;
         private DwellerBot _dwellerBot;
 
-        public SaveStateCommand(Api bot, DwellerBot dwellerBot)
+        public SaveStateCommand(Api bot, DwellerBot dwellerBot):base(bot)
         {
-            _bot = bot;
             _dwellerBot = dwellerBot;
         }
 
-        public void Execute(Update update)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
-        {
-            if (DwellerBot.OwnerUsername != update.Message.From.Username)
+            if (DwellerBot.OwnerUsername != update.Message.From.Username.ToLower())
                 return;
 
             foreach (var command in _dwellerBot.Commands.Values)

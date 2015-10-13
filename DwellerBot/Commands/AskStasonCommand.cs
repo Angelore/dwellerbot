@@ -8,24 +8,17 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class AskStasonCommand : ICommand
+    class AskStasonCommand : CommandBase
     {
         private readonly Random _rng;
-        private readonly Api _bot;
         private readonly string[] _responses = { "Да", "Нет", "Возможно", "Маловероятно", "Конечно", "Спросите позже", "Спроси у Пашана" };
 
-        public AskStasonCommand(Api bot)
+        public AskStasonCommand(Api bot):base(bot)
         {
-            _bot = bot;
             _rng = new Random();
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             if (!parsedMessage.ContainsKey("message") || string.IsNullOrEmpty(parsedMessage["message"]))
                 return;

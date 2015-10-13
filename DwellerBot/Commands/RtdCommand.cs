@@ -9,23 +9,16 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class RtdCommand : ICommand
+    class RtdCommand : CommandBase
     {
-        private Api _bot;
         private Random _rng;
 
-        public RtdCommand(Api bot)
+        public RtdCommand(Api bot):base(bot)
         {
-            _bot = bot;
             _rng = new Random();
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var rtdRegex = new Regex(@"^(\d*)d(4|6|20|100)");
 

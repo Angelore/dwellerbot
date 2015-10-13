@@ -13,23 +13,17 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class RateNbrbCommand: ICommand
+    class RateNbrbCommand: CommandBase
     {
         private const string CurrencyQueryUrl = @"http://www.nbrb.by/Services/XmlExRates.aspx";
         private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"}; 
-        private readonly Api _bot;
 
-        public RateNbrbCommand(Api bot)
+        public RateNbrbCommand(Api bot):base(bot)
         {
-            _bot = bot;
+            ;
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var responseStream = new StreamReader(await GetCurrencyRates());
             var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));

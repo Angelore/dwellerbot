@@ -8,23 +8,16 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class DebugCommand : ICommand
+    class DebugCommand : CommandBase
     {
-        private readonly Api _bot;
         private readonly DwellerBot _dwellerBot;
 
-        public DebugCommand(Api bot, DwellerBot dwellerBot)
+        public DebugCommand(Api bot, DwellerBot dwellerBot):base(bot)
         {
-            _bot = bot;
             _dwellerBot = dwellerBot;
         }
 
-        public void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             var sb = new StringBuilder();
             sb.AppendLine("Launch time: " + _dwellerBot.LaunchTime.ToUniversalTime());
