@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 using DwellerBot.Utility;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Newtonsoft.Json;
 
 namespace DwellerBot.Commands
 {
-    class ReactionCommand : ICommand
+    class ReactionCommand : ICommand, ISaveable
     {
         private readonly Api _bot;
         private readonly List<FileInfo> _files;
         private readonly Random _rng;
-        private readonly Dictionary<string, string> _sentFiles;
         private readonly string _cacheFilePath;
+        private Dictionary<string, string> _sentFiles;
 
         public ReactionCommand(Api bot, List<string> folderNames, string cacheFilePath)
         {
@@ -73,6 +74,46 @@ namespace DwellerBot.Commands
                 catch (Exception ex)
                 {
                     Logger.Error(string.Format("An error has occured during file sending! Message: {0}", ex.Message));
+                }
+            }
+        }
+
+        public void SaveState()
+        {
+            if (_sentFiles.Count == 0)
+                return;
+
+            using (var sw = new StreamWriter(new FileStream(_cacheFilePath, FileMode.Create, FileAccess.Write)))
+            {
+                var config = JsonConvert.SerializeObject(_sentFiles);
+                sw.WriteLine(config);
+            }
+
+            Logger.Info("ReactionCommand state was successfully saved.");
+        }
+
+        public void LoadState()
+        {
+            using (var sr = new StreamReader(new FileStream(_cacheFilePath, FileMode.OpenOrCreate)))
+            {
+                var str = sr.ReadToEnd();
+                if (str.Length > 0)
+                {
+                    Dictionary<string, string> config = null;
+                    try
+                    {
+                        config = JsonConvert.DeserializeObject<Dictionary<string, string>>(str);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(string.Format("An error as occured during parsing of {0} file. Message: {1}", _cacheFilePath, ex.Message));
+                    }
+                    if (config != null)
+                        _sentFiles = config;
+                }
+                else
+                {
+                    Logger.Warning(string.Format("The file {0} was expected to be populated with data, but was empty.", _cacheFilePath));
                 }
             }
         }

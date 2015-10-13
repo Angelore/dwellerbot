@@ -17,7 +17,8 @@ namespace DwellerBot
 {
     public class DwellerBot
     {
-        private const string BotName = @"@DwellerBot";
+        internal const string BotName = @"@DwellerBot";
+        internal const string OwnerUsername = "angelore";
 
         private readonly Api _bot;
 
@@ -28,7 +29,7 @@ namespace DwellerBot
         internal int CommandsProcessed;
         internal int ErrorCount;
 
-        private Dictionary<string, ICommand> Commands { get; } 
+        internal Dictionary<string, ICommand> Commands { get; } 
 
         public DwellerBot(Settings settings)
         {
@@ -45,7 +46,6 @@ namespace DwellerBot
             {
                 {@"/debug", new DebugCommand(_bot, this)},
                 {@"/rate", new RateNbrbCommand(_bot)},
-                //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
                 {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)},
                 {
@@ -56,8 +56,18 @@ namespace DwellerBot
                         settings.paths.paths.First(x => x.name == "reactionImageCachePath").value
                         )
                 },
-                {@"/rtd", new RtdCommand(_bot)}
+                {@"/rtd", new RtdCommand(_bot)},
+                {@"/savestate", new SaveStateCommand(_bot, this)}
             };
+            
+            // Load states of commands that support states
+            foreach (var command in Commands.Values)
+            {
+                if (command is ISaveable)
+                {
+                    ((ISaveable)command).LoadState();
+                }
+            }
         }
         
         public async Task Run()
