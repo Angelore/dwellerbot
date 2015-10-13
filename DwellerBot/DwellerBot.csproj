@@ -68,6 +68,7 @@
     <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\RateNbrbCommand.cs" />
     <Compile Include="Commands\ReactionCommand.cs" />
+    <Compile Include="Commands\RtdCommand.cs" />
     <Compile Include="Commands\WeatherCommand.cs" />
     <Compile Include="CurrencyContainer.cs" />
     <Compile Include="Commands\RateCommand.cs" />
