@@ -43,7 +43,7 @@ namespace DwellerBot.Commands
                           weatherContainer.weather[0].description);
             sb.AppendLine("Влажность: " + weatherContainer.main.humidity + "%");
             sb.AppendLine("Ветер: " + weatherContainer.wind.speed + " м/с");
-            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString());
+            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetWeather()

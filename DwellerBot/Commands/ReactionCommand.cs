@@ -44,12 +44,19 @@ namespace DwellerBot.Commands
 
         public async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
+            if (_files.Count == 0)
+            {
+                await
+                    _bot.SendTextMessage(update.Message.Chat.Id, "No files available.", false, update.Message.MessageId);
+                return;
+            }
+
             var ind = _rng.Next(0, _files.Count);
             if (_sentFiles.ContainsKey(_files[ind].Name))
             {
                 try
                 {
-                    await _bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].Name]);
+                    await _bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].Name], "", update.Message.MessageId);
                 }
                 catch (Exception ex)
                 {
@@ -62,7 +69,7 @@ namespace DwellerBot.Commands
             {
                 try
                 {
-                    var message = await _bot.SendPhoto(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ));
+                    var message = await _bot.SendPhoto(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ), "", update.Message.MessageId);
                     _sentFiles.Add(_files[ind].Name, message.Photo.Last().FileId);
                 }
                 catch (Exception ex)
