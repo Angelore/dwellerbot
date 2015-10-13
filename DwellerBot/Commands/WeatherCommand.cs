@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using DwellerBot.Models;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;

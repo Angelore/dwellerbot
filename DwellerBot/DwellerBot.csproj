@@ -70,9 +70,9 @@
     <Compile Include="Commands\ReactionCommand.cs" />
     <Compile Include="Commands\RtdCommand.cs" />
     <Compile Include="Commands\WeatherCommand.cs" />
-    <Compile Include="CurrencyContainer.cs" />
+    <Compile Include="Models\CurrencyContainer.cs" />
     <Compile Include="Commands\RateCommand.cs" />
-    <Compile Include="CurrencyContainerXml.cs" />
+    <Compile Include="Models\CurrencyContainerXml.cs" />
     <Compile Include="DwellerBot.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="Program.cs" />
@@ -82,7 +82,7 @@
     <Compile Include="Utility\ConsoleLogger.cs" />
     <Compile Include="Utility\ILogger.cs" />
     <Compile Include="Utility\Logger.cs" />
-    <Compile Include="WeatherContainer.cs" />
+    <Compile Include="Models\WeatherContainer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

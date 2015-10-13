@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DwellerBot
+namespace DwellerBot.Models
 {
     public class CurrencyContainer
     {
