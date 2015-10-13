@@ -48,7 +48,14 @@ namespace DwellerBot
                 //{@"/stason", new StasonCommand()},
                 {@"/askstason", new AskStasonCommand(_bot)},
                 {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)},
-                {@"/reaction", new ReactionCommand(_bot)},
+                {
+                    @"/reaction",
+                    new ReactionCommand(
+                        _bot,
+                        settings.paths.pathGroups.First(x => x.name == "reactionImagePaths").paths.Select(x => x.value).ToList(),
+                        settings.paths.paths.First(x => x.name == "reactionImageCachePath").value
+                        )
+                },
                 {@"/rtd", new RtdCommand(_bot)}
             };
         }

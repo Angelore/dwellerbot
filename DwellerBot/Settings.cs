@@ -11,59 +11,81 @@ namespace DwellerBot
     [System.Xml.Serialization.XmlRootAttribute(Namespace = "", IsNullable = false)]
     public partial class Settings
     {
-
-        private settingsKey[] keysField;
-
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("key", IsNullable = false)]
-        public settingsKey[] keys
-        {
-            get
-            {
-                return this.keysField;
-            }
-            set
-            {
-                this.keysField = value;
-            }
-        }
+        public Key[] keys { get; set; }
+
+        /// <remarks/>
+        public Paths paths { get; set; }
     }
 
     /// <remarks/>
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
-    public partial class settingsKey
+    public partial class Key
     {
-
-        private string nameField;
-
-        private string valueField;
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string name { get; set; }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string name
-        {
-            get
-            {
-                return this.nameField;
-            }
-            set
-            {
-                this.nameField = value;
-            }
-        }
+        public string value { get; set; }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class Paths
+    {
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("pathGroup")]
+        public PathGroup[] pathGroups { get; set; }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("path")]
+        public Path[] paths { get; set; }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class PathGroup
+    {
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute("path")]
+        public Path[] paths { get; set; }
 
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
-        public string value
-        {
-            get
-            {
-                return this.valueField;
-            }
-            set
-            {
-                this.valueField = value;
-            }
-        }
+        public string name { get; set; }
+    }
+
+    /// <remarks/>
+    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType = true)]
+    public partial class Path
+    {
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string name { get; set; }
+
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public string value { get; set; }
     }
 }
+
+/* Settings example
+
+<?xml version="1.0" encoding="utf-8" ?>
+<Settings>
+  <keys>
+    <key name="dwellerBotKey" value=""/>
+    <key name="openWeatherKey" value=""/>
+  </keys>
+  <paths>
+    <pathGroup name="reactionImagePaths">
+      <path value="D:\Pictures\"/>
+      <path value="D:\Pictures\Macro"/>
+    </pathGroup>
+    <path name="reactionImageCachePath" value="reactionImageCache.json"/>
+  </paths>
+</Settings>
+*/

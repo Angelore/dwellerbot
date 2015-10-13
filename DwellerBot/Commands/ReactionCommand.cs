@@ -12,22 +12,18 @@ namespace DwellerBot.Commands
 {
     class ReactionCommand : ICommand
     {
-        private readonly List<string> _imageFolders = new List<string>
-        {
-            @"D:\Pictures\Internets\Reaction_images",
-            @"D:\Pictures\Internets\Reaction_images\Macro"
-        };
         private readonly Api _bot;
         private readonly List<FileInfo> _files;
         private readonly Random _rng;
         private readonly Dictionary<string, string> _sentFiles;
+        private readonly string _cacheFilePath;
 
-        public ReactionCommand(Api bot)
+        public ReactionCommand(Api bot, List<string> folderNames, string cacheFilePath)
         {
             _bot = bot;
             _rng = new Random();
             _files = new List<FileInfo>();
-            foreach (var folderName in _imageFolders)
+            foreach (var folderName in folderNames)
             {
                 var dir = new DirectoryInfo(folderName);
                 if (dir.Exists)
@@ -35,6 +31,7 @@ namespace DwellerBot.Commands
                     _files.AddRange(dir.EnumerateFiles().ToList());
                 }
             }
+            _cacheFilePath = cacheFilePath;
             _sentFiles = new Dictionary<string, string>();
         }
 
