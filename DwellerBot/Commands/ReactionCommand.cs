@@ -4,10 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DwellerBot.Utility;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace DwellerBot.Commands
 {
@@ -51,7 +51,7 @@ namespace DwellerBot.Commands
             }
 
             var ind = _rng.Next(0, _files.Count);
-            if (_sentFiles.ContainsKey(_files[ind].Name))
+            if (_sentFiles.ContainsKey(_files[ind].FullName))
             {
                 try
                 {
@@ -59,7 +59,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(string.Format("An error has occured during file resending! Message: {0}", ex.Message));
+                    Log.Logger.Error(ex, "An error has occured during file resending!");
                 }
                 return;
             }
@@ -69,11 +69,11 @@ namespace DwellerBot.Commands
                 try
                 {
                     var message = await _bot.SendPhoto(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ), "", update.Message.MessageId);
-                    _sentFiles.Add(_files[ind].Name, message.Photo.Last().FileId);
+                    _sentFiles.Add(_files[ind].FullName, message.Photo.Last().FileId);
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error(string.Format("An error has occured during file sending! Message: {0}", ex.Message));
+                    Log.Logger.Error(ex, "An error has occured during file sending!");
                 }
             }
         }
@@ -88,8 +88,8 @@ namespace DwellerBot.Commands
                 var config = JsonConvert.SerializeObject(_sentFiles);
                 sw.WriteLine(config);
             }
-
-            Logger.Info("ReactionCommand state was successfully saved.");
+            
+            Log.Logger.Debug("ReactionCommand state was successfully saved.");
         }
 
         public void LoadState()
@@ -106,14 +106,14 @@ namespace DwellerBot.Commands
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error(string.Format("An error as occured during parsing of {0} file. Message: {1}", _cacheFilePath, ex.Message));
+                        Log.Logger.Error(ex, "An error as occured during parsing of {0} file.", _cacheFilePath);
                     }
                     if (config != null)
                         _sentFiles = config;
                 }
                 else
                 {
-                    Logger.Warning(string.Format("The file {0} was expected to be populated with data, but was empty.", _cacheFilePath));
+                    Log.Logger.Warning("The file {0} was expected to be populated with data, but was empty.", _cacheFilePath);
                 }
             }
         }

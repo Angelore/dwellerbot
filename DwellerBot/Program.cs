@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
-using DwellerBot.Utility;
+using System.Reflection;
+using Serilog;
 
 namespace DwellerBot
 {
@@ -8,7 +9,14 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
-            Logger.AddLogger(new ConsoleLogger());
+            var baseDirectory = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var logFileTempalate = System.IO.Path.Combine(baseDirectory, "Log-{{Date}}.txt");
+            
+            Log.Logger = new LoggerConfiguration()
+                             .MinimumLevel.Debug()
+                             .WriteTo.ColoredConsole()
+                             //.WriteTo.RollingFile(logFileTempalate)
+                             .CreateLogger();
 
             var resourceName = @"Resources\Settings.xml";
             Settings settings;
