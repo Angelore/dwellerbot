@@ -1,14 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Mime;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.IO;
 using System.Xml.Serialization;
-using Telegram.Bot;
 
 namespace DwellerBot
 {
@@ -16,11 +7,10 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = @"DwellerBot.Resources.Settings.xml";
+            var resourceName = @"Resources\Settings.xml";
             Settings settings;
             
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (FileStream stream = new FileStream(resourceName, FileMode.Open, FileAccess.Read))
             using (StreamReader reader = new StreamReader(stream))
             {
                 var deserializer = new XmlSerializer(typeof(Settings));
