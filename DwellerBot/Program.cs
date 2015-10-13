@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
+using DwellerBot.Utility;
 
 namespace DwellerBot
 {
@@ -7,6 +8,8 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
+            Logger.AddLogger(new ConsoleLogger());
+
             var resourceName = @"Resources\Settings.xml";
             Settings settings;
             

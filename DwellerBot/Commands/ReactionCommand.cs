@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DwellerBot.Utility;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -60,7 +61,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("An error has occured during file resending! Message: {0}", ex.Message);
+                    Logger.Error(string.Format("An error has occured during file resending! Message: {0}", ex.Message));
                 }
                 return;
             }
@@ -74,7 +75,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("An error has occured during file sending! Message: {0}", ex.Message);
+                    Logger.Error(string.Format("An error has occured during file sending! Message: {0}", ex.Message));
                 }
             }
         }

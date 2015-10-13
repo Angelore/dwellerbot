@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DwellerBot.Commands;
+using DwellerBot.Utility;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -57,7 +58,7 @@ namespace DwellerBot
             System.Threading.Thread.Sleep(500);
             var me = await _bot.GetMe();
 
-            Console.WriteLine("{0} is online and fully functional." + Environment.NewLine, me.Username);
+            Logger.Info(string.Format("{0} is online and fully functional." + Environment.NewLine, me.Username));
 
             while (true)
             {
@@ -68,8 +69,11 @@ namespace DwellerBot
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("!> An error has occured while receiving updates.");
-                    Console.WriteLine("!> Error message: {0}", ex.Message);
+                    Logger.Error(new []
+                    {
+                        string.Format("An error has occured while receiving updates."),
+                        string.Format("Error message: {0}", ex.Message)
+                    });
                     ErrorCount++;
                 }
 
@@ -77,7 +81,8 @@ namespace DwellerBot
                 {
                     if (update.Message.Text != null)
                     {
-                        Console.WriteLine("> A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text);
+                        Logger.Info(string.Format("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text));
+
                         Dictionary<string, string> parsedMessage = new Dictionary<string, string>();
                         try
                         {
@@ -85,8 +90,11 @@ namespace DwellerBot
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine("!> An error has occured during message parsing.");
-                            Console.WriteLine("!> Error message: {0}", ex.Message);
+                            Logger.Error(new[]
+                            {
+                                string.Format("An error has occured during message parsing."),
+                                string.Format("Error message: {0}", ex.Message)
+                            });
                             ErrorCount++;
                         }
                         if (Commands.ContainsKey(parsedMessage["command"]))
@@ -98,8 +106,11 @@ namespace DwellerBot
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine("!> An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]);
-                                Console.WriteLine("!> Error message: {0}", ex.Message);
+                                Logger.Error(new[]
+                                {
+                                    string.Format("An error has occured during {0} command." + Environment.NewLine, parsedMessage["command"]),
+                                    string.Format("Error message: {0}", ex.Message)
+                                });
                                 ErrorCount++;
                             }
                         }
