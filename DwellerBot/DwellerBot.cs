@@ -19,6 +19,7 @@ namespace DwellerBot
     {
         internal const string BotName = @"@DwellerBot";
         internal const string OwnerUsername = "angelore";
+        internal const int OwnerId = 99541817;
 
         private readonly Api _bot;
 
@@ -162,6 +163,14 @@ namespace DwellerBot
                 result.Add("command", string.Empty);
 
             return result;
+        }
+
+        public static bool IsUserOwner(User user)
+        {
+            if (user.Id == OwnerId && user.Username.Equals(OwnerUsername))
+                return true;
+
+            return false;
         }
     }
 }

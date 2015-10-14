@@ -19,7 +19,7 @@ namespace DwellerBot.Commands
 
         public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
-            if (DwellerBot.OwnerUsername != update.Message.From.Username.ToLower())
+            if (!DwellerBot.IsUserOwner(update.Message.From))
                 return;
 
             foreach (var command in _dwellerBot.Commands.Values)
