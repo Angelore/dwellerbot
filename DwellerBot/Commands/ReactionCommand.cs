@@ -78,7 +78,7 @@ namespace DwellerBot.Commands
 
             using (var sw = new StreamWriter(new FileStream(_cacheFilePath, FileMode.Create, FileAccess.Write)))
             {
-                var config = JsonConvert.SerializeObject(_sentFiles);
+                var config = JsonConvert.SerializeObject(_sentFiles, Formatting.Indented);
                 sw.WriteLine(config);
             }
             

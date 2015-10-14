@@ -58,6 +58,7 @@ namespace DwellerBot
                         )
                 },
                 {@"/rtd", new RtdCommand(_bot)},
+                {@"/featurerequest", new FeatureRequestCommand(_bot, settings.paths.paths.First(x => x.name == "featureRequestsPath").value)},
                 {@"/savestate", new SaveStateCommand(_bot, this)}
             };
             

@@ -9,6 +9,7 @@ using DwellerBot.Models;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using DwellerBot.Utility;
 
 namespace DwellerBot.Commands
 {
@@ -30,7 +31,7 @@ namespace DwellerBot.Commands
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());
             var sb = new StringBuilder();
             sb.Append("Погода в " + weatherContainer.name + ", " + weatherContainer.sys.country);
-            sb.AppendLine(" на " + UnixTimeStampToDateTime(weatherContainer.dt).ToLocalTime().ToShortDateString());
+            sb.AppendLine(" на " + weatherContainer.dt.UnixTimeStampToDateTime().ToLocalTime().ToShortDateString());
             sb.AppendLine();
             /*sb.AppendLine("От " + weatherContainer.main.temp_min +
                           " до " + weatherContainer.main.temp_max + " *С, " +
@@ -45,14 +46,6 @@ namespace DwellerBot.Commands
         {
             var hc = new HttpClient();
             return await hc.GetStreamAsync(WeatherQueryUrl + _apiKey);
-        }
-
-        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            // Unix timestamp is seconds past epoch
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
         }
     }
 }
