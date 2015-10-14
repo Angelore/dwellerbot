@@ -70,7 +70,7 @@ namespace DwellerBot.Commands
                     if (config != null)
                     {
                         _requests = config;
-                        _requestIndex = _requests.Count;
+                        _requestIndex = _requests.Last().Key + 1;
                     }
                 }
                 else

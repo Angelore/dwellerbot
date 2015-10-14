@@ -48,7 +48,7 @@ namespace DwellerBot.Commands
             {
                 try
                 {
-                    await _bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].Name], "", update.Message.MessageId);
+                    await _bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].FullName], "", update.Message.MessageId);
                 }
                 catch (Exception ex)
                 {
