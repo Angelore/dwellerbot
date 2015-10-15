@@ -33,6 +33,7 @@ namespace DwellerBot.Commands
             var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
             var currencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates};
 
+            // Get data for previous date for comparison
             if (_previousDayCurrencyContainer == null ||
                 DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(1) !=
                 DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null))

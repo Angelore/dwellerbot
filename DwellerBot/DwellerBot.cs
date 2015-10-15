@@ -36,6 +36,7 @@ namespace DwellerBot
         {
             _rng = new Random();
 
+            // Get bot api token
             _bot = new Api(settings.keys.First(x => x.name == "dwellerBotKey").value);
 
             Offset = 0;
@@ -74,7 +75,6 @@ namespace DwellerBot
         
         public async Task Run()
         {
-            System.Threading.Thread.Sleep(500);
             var me = await _bot.GetMe();
             
             Log.Logger.Information("{0} is online and fully functional." + Environment.NewLine, me.Username);
