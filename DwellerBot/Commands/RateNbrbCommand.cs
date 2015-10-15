@@ -14,13 +14,13 @@ using Serilog;
 
 namespace DwellerBot.Commands
 {
-    class RateNbrbCommand: CommandBase, ISaveable
+    class RateNbrbCommand: CommandBase
     {
         private const string CurrencyQueryUrl = @"http://www.nbrb.by/Services/XmlExRates.aspx";
+        private const string OnDateParam = @"?ondate=";
         private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"};
-        private const string StorageFolderName = "CurrencyRates";
 
-        private CurrencyContainerXml _previousResult = null;
+        private CurrencyContainerXml _previousDayCurrencyContainer;
 
         public RateNbrbCommand(Api bot):base(bot)
         {
@@ -32,6 +32,16 @@ namespace DwellerBot.Commands
             var responseStream = new StreamReader(await GetCurrencyRates());
             var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
             var currencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates};
+
+            if (_previousDayCurrencyContainer == null ||
+                DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(1) !=
+                DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null))
+            {
+                var ondate = DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(-1).ToString(@"MM\/dd\/yyyy");
+                responseStream = new StreamReader(await GetCurrencyRates(OnDateParam + ondate));
+                _previousDayCurrencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates };
+            }
+
             var sb = new StringBuilder();
             sb.Append("Курсы валют на ");
             sb.AppendLine(currencyContainer.DailyRates.Date);
@@ -41,78 +51,34 @@ namespace DwellerBot.Commands
             if (parsedMessage.ContainsKey("message"))
             {
                 var names = parsedMessage["message"].Split(',').ToList();
-                foreach (var cname in names)
-                {
-                    currenciesList.Add(cname.ToUpper());
-                }
+                currenciesList.AddRange(names.Select(cname => cname.ToUpper()));
             }
             if (currenciesList.Count == 0)
                 currenciesList = _defaultCurrenciesList;
 
             foreach (var currency in currencyContainer.DailyRates.Currency.Where(x => currenciesList.Contains(x.CharCode)))
             {
-                sb.AppendLine(currency.CharCode + ": " + currency.Rate);
+                sb.Append(currency.CharCode + ": " + currency.Rate);
+                if (_previousDayCurrencyContainer != null)
+                {
+                    var diff = currency.Rate -
+                               _previousDayCurrencyContainer.DailyRates.Currency.First(
+                                   x => x.CharCode == currency.CharCode).Rate;
+                    sb.Append(" _(");
+                    sb.Append(diff > 0 ? "+" : "-");
+                    sb.Append(Math.Abs(diff));
+                    sb.Append(")_");
+                }
+                sb.AppendLine();
             }
-            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
 
-            _previousResult = currencyContainer;
+            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId, null, true);
         }
 
-        public async Task<Stream> GetCurrencyRates()
+        public async Task<Stream> GetCurrencyRates(string param = "")
         {
             var hc = new HttpClient();
-            return await hc.GetStreamAsync(CurrencyQueryUrl);
-        }
-
-        public void SaveState()
-        {
-            if (_previousResult == null)
-                return;
-
-            var dirInfo = new DirectoryInfo(StorageFolderName);
-            if (!dirInfo.Exists)
-                dirInfo.Create();
-
-            string newFileName = "currencyrate" + _previousResult.DailyRates.Date.Replace("/","") + ".xml";
-            var fileInfo = new FileInfo(System.IO.Path.Combine(StorageFolderName, newFileName));
-            if (fileInfo.Exists)
-                return;
-
-            using (var sw = new StreamWriter(new FileStream(fileInfo.FullName, FileMode.Create, FileAccess.Write)))
-            {
-                var xmlSerializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
-                xmlSerializer.Serialize(sw, _previousResult.DailyRates);
-            }
-
-            Log.Logger.Debug("RateNbrbCommand state was successfully saved.");
-        }
-
-        public void LoadState()
-        {
-            LoadState(DateTime.Now.AddDays(-1).ToString("MMddyyyy"));
-        }
-
-        public void LoadState(string targetDate)
-        {
-            var dirInfo = new DirectoryInfo(StorageFolderName);
-            if (!dirInfo.Exists)
-            {
-                dirInfo.Create();
-                return;
-            }
-
-            string newFileName = "currencyrate" + targetDate + ".xml";
-            var fileInfo = new FileInfo(System.IO.Path.Combine(StorageFolderName, newFileName));
-            if (!fileInfo.Exists)
-                return;
-
-            using (var sr = new StreamReader(new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read)))
-            {
-                var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
-                _previousResult = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(sr) as CurrencyContainerXml.DailyExRates };
-            }
-
-            // Log.Logger.Debug("RateNbrbCommand state was successfully loaded.");
+            return await hc.GetStreamAsync(CurrencyQueryUrl + param);
         }
     }
 }
