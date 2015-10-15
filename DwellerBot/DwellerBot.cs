@@ -79,6 +79,13 @@ namespace DwellerBot
             
             Log.Logger.Information("{0} is online and fully functional." + Environment.NewLine, me.Username);
 
+            //await _bot.SendTextMessage(-39324765, "Aleksnekot, Повторяю, Ваши подозрения абсолютно беспочвенны. Я являюсь простым чат-ботом для обработки комманд.");
+            //using (var fs = new FileStream(@"D:\Pictures\5867rJ0.jpg", FileMode.Open, FileAccess.Read))
+            //{
+            //    await _bot.SendPhoto(-39324765, new FileToSend("5867rJ0.jpg", fs));
+            //}
+            //return;
+
             while (true)
             {
                 Update[] updates = new Update[0];

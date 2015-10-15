@@ -10,13 +10,17 @@ using DwellerBot.Models;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Serilog;
 
 namespace DwellerBot.Commands
 {
-    class RateNbrbCommand: CommandBase
+    class RateNbrbCommand: CommandBase, ISaveable
     {
         private const string CurrencyQueryUrl = @"http://www.nbrb.by/Services/XmlExRates.aspx";
-        private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"}; 
+        private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"};
+        private const string StorageFolderName = "CurrencyRates";
+
+        private CurrencyContainerXml _previousResult = null;
 
         public RateNbrbCommand(Api bot):base(bot)
         {
@@ -50,12 +54,65 @@ namespace DwellerBot.Commands
                 sb.AppendLine(currency.CharCode + ": " + currency.Rate);
             }
             await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+
+            _previousResult = currencyContainer;
         }
 
         public async Task<Stream> GetCurrencyRates()
         {
             var hc = new HttpClient();
             return await hc.GetStreamAsync(CurrencyQueryUrl);
+        }
+
+        public void SaveState()
+        {
+            if (_previousResult == null)
+                return;
+
+            var dirInfo = new DirectoryInfo(StorageFolderName);
+            if (!dirInfo.Exists)
+                dirInfo.Create();
+
+            string newFileName = "currencyrate" + _previousResult.DailyRates.Date.Replace("/","") + ".xml";
+            var fileInfo = new FileInfo(System.IO.Path.Combine(StorageFolderName, newFileName));
+            if (fileInfo.Exists)
+                return;
+
+            using (var sw = new StreamWriter(new FileStream(fileInfo.FullName, FileMode.Create, FileAccess.Write)))
+            {
+                var xmlSerializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
+                xmlSerializer.Serialize(sw, _previousResult.DailyRates);
+            }
+
+            Log.Logger.Debug("RateNbrbCommand state was successfully saved.");
+        }
+
+        public void LoadState()
+        {
+            LoadState(DateTime.Now.AddDays(-1).ToString("MMddyyyy"));
+        }
+
+        public void LoadState(string targetDate)
+        {
+            var dirInfo = new DirectoryInfo(StorageFolderName);
+            if (!dirInfo.Exists)
+            {
+                dirInfo.Create();
+                return;
+            }
+
+            string newFileName = "currencyrate" + targetDate + ".xml";
+            var fileInfo = new FileInfo(System.IO.Path.Combine(StorageFolderName, newFileName));
+            if (!fileInfo.Exists)
+                return;
+
+            using (var sr = new StreamReader(new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read)))
+            {
+                var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
+                _previousResult = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(sr) as CurrencyContainerXml.DailyExRates };
+            }
+
+            // Log.Logger.Debug("RateNbrbCommand state was successfully loaded.");
         }
     }
 }
