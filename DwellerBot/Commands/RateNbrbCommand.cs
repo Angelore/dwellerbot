@@ -44,7 +44,7 @@ namespace DwellerBot.Commands
 
             var sb = new StringBuilder();
             sb.Append("Курсы валют на ");
-            sb.AppendLine(currencyContainer.DailyRates.Date);
+            sb.AppendLine(DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).ToShortDateString());
             sb.AppendLine();
 
             List<string> currenciesList = new List<string>();
