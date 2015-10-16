@@ -38,14 +38,22 @@ namespace DwellerBot.Commands
                 DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(1) !=
                 DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null))
             {
-                var ondate = DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(-1).ToString(@"MM\/dd\/yyyy");
-                responseStream = new StreamReader(await GetCurrencyRates(OnDateParam + ondate));
+                var ondate = DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(-1);
+                // Rates do not update on weekend (at least here, duh)
+                if (ondate.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    ondate = ondate.AddDays(-2);
+                }
+                var ondatestring = ondate.ToString(@"MM\/dd\/yyyy");
+                responseStream = new StreamReader(await GetCurrencyRates(OnDateParam + ondatestring));
                 _previousDayCurrencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates };
             }
 
             var sb = new StringBuilder();
             sb.Append("Курсы валют на ");
             sb.AppendLine(DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).ToShortDateString());
+            sb.Append("По отношению к ");
+            sb.AppendLine(DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).ToShortDateString());
             sb.AppendLine();
 
             List<string> currenciesList = new List<string>();
