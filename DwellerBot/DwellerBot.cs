@@ -29,6 +29,7 @@ namespace DwellerBot
         internal DateTime LaunchTime;
         internal int CommandsProcessed;
         internal int ErrorCount;
+        internal bool IsOnline = true;
 
         internal Dictionary<string, ICommand> Commands { get; } 
 
@@ -60,7 +61,8 @@ namespace DwellerBot
                 },
                 {@"/rtd", new RtdCommand(_bot)},
                 {@"/featurerequest", new FeatureRequestCommand(_bot, settings.paths.paths.First(x => x.name == "featureRequestsPath").value)},
-                {@"/savestate", new SaveStateCommand(_bot, this)}
+                {@"/savestate", new SaveStateCommand(_bot, this)},
+                {@"/shutdown", new ShutdownCommand(_bot, this)}
             };
             
             // Load states of commands that support states
@@ -86,7 +88,7 @@ namespace DwellerBot
             //}
             //return;
 
-            while (true)
+            while (IsOnline)
             {
                 Update[] updates = new Update[0];
                 try

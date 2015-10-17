@@ -80,6 +80,7 @@
     <Compile Include="Commands\ReactionCommand.cs" />
     <Compile Include="Commands\RtdCommand.cs" />
     <Compile Include="Commands\SaveStateCommand.cs" />
+    <Compile Include="Commands\ShutdownCommand.cs" />
     <Compile Include="Commands\WeatherCommand.cs" />
     <Compile Include="ISaveable.cs" />
     <Compile Include="Models\CurrencyContainer.cs" />
