@@ -16,9 +16,10 @@ namespace DwellerBot.Commands
     class WeatherCommand : CommandBase
     {
         private const string WeatherQueryUrl =
-            @"http://api.openweathermap.org/data/2.5/weather?q=Minsk,by&units=metric&lang=ru&APPID=";
+            @"http://api.openweathermap.org/data/2.5/weather?q=%location%&units=metric&lang=ru&APPID=";
 
         private readonly string _apiKey;
+        private string _location;
 
         public WeatherCommand(Api bot, string apiKey):base(bot)
         {
@@ -27,8 +28,27 @@ namespace DwellerBot.Commands
 
         public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
+            // Restore default value
+            _location = "Minsk,by";
+
+            // If arguments are supplied, try to insert them into query
+            if (parsedMessage.ContainsKey("message"))
+            {
+                var args = parsedMessage["message"].Split(',');
+                if (args.Length >= 2)
+                {
+                    _location = args[0] + "," + args[1];
+                }
+            }
+
             var responseStream = new StreamReader(await GetWeather());
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());
+            if (weatherContainer.cod == 404)
+            {
+                await _bot.SendTextMessage(update.Message.Chat.Id, "Invalid arguments.", false, update.Message.MessageId);
+                return;
+            }
+
             var sb = new StringBuilder();
             sb.Append("Погода в " + weatherContainer.name + ", " + weatherContainer.sys.country);
             sb.AppendLine(" на " + weatherContainer.dt.UnixTimeStampToDateTime().ToLocalTime().ToShortDateString());
@@ -45,7 +65,8 @@ namespace DwellerBot.Commands
         public async Task<Stream> GetWeather()
         {
             var hc = new HttpClient();
-            return await hc.GetStreamAsync(WeatherQueryUrl + _apiKey);
+            var queryUrl = WeatherQueryUrl.Replace("%location%", _location); 
+            return await hc.GetStreamAsync(queryUrl + _apiKey);
         }
     }
 }
