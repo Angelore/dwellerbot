@@ -53,9 +53,6 @@ namespace DwellerBot.Commands
             sb.Append("Погода в " + weatherContainer.name + ", " + weatherContainer.sys.country);
             sb.AppendLine(" на " + weatherContainer.dt.UnixTimeStampToDateTime().ToLocalTime().ToShortDateString());
             sb.AppendLine();
-            /*sb.AppendLine("От " + weatherContainer.main.temp_min +
-                          " до " + weatherContainer.main.temp_max + " *С, " +
-                          weatherContainer.weather[0].description);*/
             sb.AppendLine("Температура: " + weatherContainer.main.temp + " *C, " + weatherContainer.weather[0].description);
             sb.AppendLine("Влажность: " + weatherContainer.main.humidity + "%");
             sb.AppendLine("Ветер: " + weatherContainer.wind.speed + " м/с");
