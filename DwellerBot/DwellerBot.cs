@@ -31,7 +31,7 @@ namespace DwellerBot
         internal int ErrorCount;
         internal bool IsOnline = true;
 
-        internal Dictionary<string, ICommand> Commands { get; } 
+        internal Dictionary<string, ICommand> Commands { get; set; } 
 
         public DwellerBot(Settings settings)
         {
@@ -90,7 +90,7 @@ namespace DwellerBot
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured while receiving updates.");
+					Log.Logger.Error(ex, "An error has occured while receiving updates.");
                     ErrorCount++;
                 }
 
