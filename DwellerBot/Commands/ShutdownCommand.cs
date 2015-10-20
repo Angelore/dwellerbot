@@ -22,7 +22,12 @@ namespace DwellerBot.Commands
             if (!DwellerBot.IsUserOwner(update.Message.From))
                 return;
 
-            _dwellerBot.Commands.FirstOrDefault(x => x.Key == "/savestate").Value?.ExecuteAsync(update, parsedMessage);
+	        ICommand command;
+	        if (_dwellerBot.Commands.TryGetValue("/savestate", out command))
+	        {
+		        await command.ExecuteAsync(update, parsedMessage);
+            }
+
             _dwellerBot.IsOnline = false;
 
             await _bot.SendTextMessage(update.Message.Chat.Id, "Shutting down.", false, update.Message.MessageId);
