@@ -38,13 +38,13 @@ namespace DwellerBot.Commands
                         {
                             sb.AppendLine("Dice " + (index + 1) + ": " + (_rng.Next(diceEdges) + 1));
                         }
-                        await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+                        await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
                         return;
                     }
                 }
             }
 
-            await _bot.SendTextMessage(update.Message.Chat.Id, "Format: [number(?1-6)]d[number(4|6|20|100)].", false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, "Format: [number(?1-6)]d[number(4|6|20|100)].", false, update.Message.MessageId);
         }
     }
 }

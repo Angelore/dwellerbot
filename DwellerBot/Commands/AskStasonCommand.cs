@@ -66,7 +66,7 @@ namespace DwellerBot.Commands
         public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             if (_responses.Count == 0)
-                await _bot.SendTextMessage(update.Message.Chat.Id, "Зато мы делаем ракеты", false, update.Message.MessageId);
+                await Bot.SendTextMessage(update.Message.Chat.Id, "Зато мы делаем ракеты", false, update.Message.MessageId);
 
             if (!parsedMessage.ContainsKey("message") || string.IsNullOrEmpty(parsedMessage["message"]))
                 return;
@@ -86,7 +86,7 @@ namespace DwellerBot.Commands
             {
                 answer = _responses[0];
             }
-            await _bot.SendTextMessage(update.Message.Chat.Id, answer, false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, answer, false, update.Message.MessageId);
         }
     }
 }

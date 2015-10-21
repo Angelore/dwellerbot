@@ -45,7 +45,7 @@ namespace DwellerBot.Commands
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());
             if (weatherContainer.cod == 404)
             {
-                await _bot.SendTextMessage(update.Message.Chat.Id, "Invalid arguments.", false, update.Message.MessageId);
+                await Bot.SendTextMessage(update.Message.Chat.Id, "Invalid arguments.", false, update.Message.MessageId);
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace DwellerBot.Commands
             sb.AppendLine("Температура: " + weatherContainer.main.temp + " *C, " + weatherContainer.weather[0].description);
             sb.AppendLine("Влажность: " + weatherContainer.main.humidity + "%");
             sb.AppendLine("Ветер: " + weatherContainer.wind.speed + " м/с");
-            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetWeather()
