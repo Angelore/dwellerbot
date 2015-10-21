@@ -81,7 +81,7 @@ namespace DwellerBot.Commands
                 sb.AppendLine();
             }
 
-            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId, null, true);
+            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId, null, true);
         }
 
         public async Task<Stream> GetCurrencyRates(string param = "")

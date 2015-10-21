@@ -30,7 +30,7 @@ namespace DwellerBot.Commands
                 }
             }
 
-            await _bot.SendTextMessage(update.Message.Chat.Id, "State saved.", false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, "State saved.", false, update.Message.MessageId);
         }
     }
 }

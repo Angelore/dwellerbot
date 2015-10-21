@@ -23,7 +23,7 @@ namespace DwellerBot.Commands
             sb.AppendLine("Launch time: " + _dwellerBot.LaunchTime.ToUniversalTime());
             sb.AppendLine("Commands processed: " + _dwellerBot.CommandsProcessed);
             sb.AppendLine("Errors: " + _dwellerBot.ErrorCount);
-            await _bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
         }
     }
 }
