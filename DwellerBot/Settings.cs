@@ -73,8 +73,6 @@ namespace DwellerBot
 }
 
 /* Settings example
-
-<?xml version="1.0" encoding="utf-8" ?>
 <Settings>
   <keys>
     <key name="dwellerBotKey" value=""/>
@@ -82,10 +80,12 @@ namespace DwellerBot
   </keys>
   <paths>
     <pathGroup name="reactionImagePaths">
-      <path value="D:\Pictures\"/>
-      <path value="D:\Pictures\Macro"/>
+      <path value="D:\Pictures\Internets\Reaction_images"/>
+      <path value="D:\Pictures\Internets\Reaction_images\Macro"/>
     </pathGroup>
     <path name="reactionImageCachePath" value="reactionImageCache.json"/>
+    <path name="featureRequestsPath" value="featureRequests.json"/>
+    <path name="askStasonResponsesPath" value="askStasonResponses.json"/>
   </paths>
 </Settings>
 */
