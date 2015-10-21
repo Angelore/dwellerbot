@@ -17,11 +17,6 @@ namespace DwellerBot.Commands
             _bot = bot;
         }
 
-        public virtual void Execute(Update update)
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
             throw new NotImplementedException();
