@@ -30,8 +30,8 @@ namespace DwellerBot.Commands
 
             _dwellerBot.IsOnline = false;
 
-            await _bot.SendTextMessage(update.Message.Chat.Id, "Shutting down.", false, update.Message.MessageId);
-            await _bot.GetUpdates(update.Id + 1);
+            await Bot.SendTextMessage(update.Message.Chat.Id, "Shutting down.", false, update.Message.MessageId);
+            await Bot.GetUpdates(update.Id + 1);
         }
     }
 }

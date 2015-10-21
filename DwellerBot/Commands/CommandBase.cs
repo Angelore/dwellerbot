@@ -10,16 +10,11 @@ namespace DwellerBot.Commands
 {
     class CommandBase : ICommand
     {
-        protected readonly Api _bot;
+        protected Api Bot { get; private set; }
 
         public CommandBase(Api bot)
         {
-            _bot = bot;
-        }
-
-        public virtual void Execute(Update update)
-        {
-            throw new NotImplementedException();
+            Bot = bot;
         }
 
         public virtual Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)

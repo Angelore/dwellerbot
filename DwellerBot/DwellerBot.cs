@@ -90,7 +90,7 @@ namespace DwellerBot
                 }
                 catch (Exception ex)
                 {
-					Log.Logger.Error(ex, "An error has occured while receiving updates.");
+                    Log.Logger.Error(ex, "An error has occured while receiving updates.");
                     ErrorCount++;
                 }
 

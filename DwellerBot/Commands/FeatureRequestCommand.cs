@@ -30,11 +30,11 @@ namespace DwellerBot.Commands
                 _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", update.Message.From.FirstName, parsedMessage["message"]));
                 _requestIndex++;
 
-                await _bot.SendTextMessage(update.Message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), false, update.Message.MessageId);
+                await Bot.SendTextMessage(update.Message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), false, update.Message.MessageId);
                 return;
             }
 
-            await _bot.SendTextMessage(update.Message.Chat.Id, "You have to describe your request :)", false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, "You have to describe your request :)", false, update.Message.MessageId);
         }
 
         public void SaveState()
