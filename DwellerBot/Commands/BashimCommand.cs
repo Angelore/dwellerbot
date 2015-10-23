@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using System.Web;
 
 namespace DwellerBot.Commands
 {
@@ -15,9 +17,8 @@ namespace DwellerBot.Commands
     {
         private readonly string QuoteRequestUrl = "http://bash.im/forweb/?u";
         private readonly string QuoteTagId = "b_q_t";
-        private readonly string QuoteLineBreak = "<' + 'br>"; //hack
-        private readonly string QuoteStartTag = "<' + 'div id=\"b_q_t\" style=\"padding: 1em 0;\">";
-        private readonly string QuoteEndTag = "<' + '/div>";
+        private readonly string RatingTagId = "b_q_h";
+        private readonly string QuoteLineBreak = "<br>";
 
         public BashimCommand(Api bot):base(bot)
         { }
@@ -31,23 +32,22 @@ namespace DwellerBot.Commands
                 responseString = tr.ReadToEnd();
             }
 
-            //HtmlDocument document = new HtmlDocument();
-            //document.LoadHtml(responseString);
+            var startIndex = responseString.IndexOf("+=") + 2;
+            var endIndex = responseString.IndexOf(";\ndocument");
+            var tempStr = responseString.Substring(startIndex, endIndex - startIndex);
+            var partsList = tempStr.Split('+').Select(x => x.Trim()).ToList();
+            tempStr = "";
+            // remove ' symbols
+            partsList.ForEach(x => tempStr += x.Substring(1, x.Length - 2));
 
-            // temporary code, the return value is supposed to be evaluated by js, maybe will add this later
-
-            // get rating
-            var ratingRx = new Regex(@"\[\s?\d+\s?\]");
-            var rating = ratingRx.Match(responseString);
-
-            // get quote
-            var quoteStart = responseString.IndexOf(QuoteStartTag) + QuoteStartTag.Length;
-            var quoteEnd = responseString.IndexOf(QuoteEndTag);
-            var quote = responseString.Substring(quoteStart, quoteEnd - quoteStart).Replace(QuoteLineBreak, Environment.NewLine);
-
-            var result = rating + Environment.NewLine + quote;
-
-            await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+            HtmlDocument document = new HtmlDocument();
+            document.LoadHtml(tempStr);
+            var quote = document.GetElementbyId(QuoteTagId);
+            var rating = document.GetElementbyId(RatingTagId);
+            
+            var result = rating.InnerText + Environment.NewLine + quote.InnerHtml.Replace(QuoteLineBreak, Environment.NewLine);
+            
+            await Bot.SendTextMessage(update.Message.Chat.Id, HttpUtility.HtmlDecode(result), false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetHtml ()
