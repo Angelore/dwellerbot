@@ -27,6 +27,18 @@ namespace DwellerBot.Commands
         {
             if (parsedMessage.ContainsKey("message"))
             {
+                if (parsedMessage["message"].Equals("list"))
+                {
+                    string result = "";
+                    foreach (var pair in _requests)
+                    {
+                        result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
+                    }
+
+                    await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+                    return;
+                }
+
                 _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", update.Message.From.FirstName, parsedMessage["message"]));
                 _requestIndex++;
 
