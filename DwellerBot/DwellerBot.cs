@@ -105,6 +105,8 @@ namespace DwellerBot
                         try
                         {
                             parsedMessage = ParseCommand(update.Message.Text);
+                            parsedMessage.Add("interpretedCommand", InterpretCommand(parsedMessage["command"]));
+
                         }
                         catch (Exception ex)
                         {
@@ -121,6 +123,19 @@ namespace DwellerBot
                             catch (Exception ex)
                             {
                                 Log.Logger.Error(ex, "An error has occured during {0} command.", parsedMessage["command"]);
+                                ErrorCount++;
+                            }
+                        }
+                        else // Check if the command mas typed in a russian layout
+                        {
+                            try
+                            {
+                                await Commands[parsedMessage["interpretedCommand"]].ExecuteAsync(update, parsedMessage);
+                                CommandsProcessed++;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Logger.Error(ex, "An error has occured during {0} command.", parsedMessage["interpretedCommand"]);
                                 ErrorCount++;
                             }
                         }
@@ -175,6 +190,32 @@ namespace DwellerBot
                 return true;
 
             return false;
+        }
+
+        // Temporary place for mistyped command converter. After moving to new architecture, it will be moved to a separate command
+        public static string InterpretCommand(string inputCommand)
+        {
+            var rusCharSet = @"абвгдеёжзийклмнопрстуфхцчшщъьыэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЫЭЮЯ\""№;:?/.,";
+            var engCharSet = @"f,dult`;pbqrkvyjghcnea[wxio]ms'.zF<DULT~:PBQRKVYJGHCNEA{WXIO}MS'>Z\@#$^&|/?";
+
+            var a = rusCharSet.Length;
+            var b = engCharSet.Length;
+
+            inputCommand = inputCommand.ToLower();
+            //List<char> outputSymbols = new List<char>();
+            string result = "/";
+
+            for (var i = 1; i < inputCommand.Length; i++)
+            {
+                //outputSymbols.Add(rusCharSet[rusCharSet.IndexOf(inputCommand[i])]);
+                var ind = rusCharSet.IndexOf(inputCommand[i]);
+                if (ind < 0)
+                    return "";
+
+                result += engCharSet[ind];
+            }
+
+            return result;
         }
     }
 }
