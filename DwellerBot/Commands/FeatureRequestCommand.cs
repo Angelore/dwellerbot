@@ -27,16 +27,37 @@ namespace DwellerBot.Commands
         {
             if (parsedMessage.ContainsKey("message"))
             {
-                if (parsedMessage["message"].Equals("list"))
+                var args = parsedMessage["message"].Split(',');
+                if (args.Length == 1)
                 {
-                    string result = "";
-                    foreach (var pair in _requests)
+                    // List all opened or done features
+                    if (args[0].Equals("list") || args[0].Equals("done"))
                     {
-                        result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
-                    }
+                        bool listOpened = args[0].Equals("list");
+                        string result = "";
+                        foreach (var pair in _requests)
+                        {
+                            if (listOpened && pair.Value.IndexOf("[Done]") == 0)
+                                continue;
+                            if (!listOpened && pair.Value.IndexOf("[Done]") != 0)
+                                continue;
+                            result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
+                        }
 
-                    await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
-                    return;
+                        await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+                        return;
+                    }
+                }
+                else if (args.Length == 2)
+                {
+                    int index;
+                    if (args[0].Equals("close") && int.TryParse(args[1], out index) && _requests.ContainsKey(index) && DwellerBot.IsUserOwner(update.Message.From))
+                    {
+                        _requests[index] = "[Done] " + _requests[index];
+                        var result = string.Format("{0}: {1}{2}", index, _requests[index], Environment.NewLine);
+                        await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+                        return;
+                    }
                 }
 
                 _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", update.Message.From.FirstName, parsedMessage["message"]));
@@ -46,7 +67,7 @@ namespace DwellerBot.Commands
                 return;
             }
 
-            await Bot.SendTextMessage(update.Message.Chat.Id, "You have to describe your request :)", false, update.Message.MessageId);
+            await Bot.SendTextMessage(update.Message.Chat.Id, "You have to describe your request :)\nlist - opened requests\ndone - completed requests", false, update.Message.MessageId);
         }
 
         public void SaveState()
