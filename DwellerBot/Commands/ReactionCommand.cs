@@ -51,7 +51,9 @@ namespace DwellerBot.Commands
             {
                 try
                 {
-                    await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
+                    // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
+                    // which is not the case if you use an image from telegram servers, so this better stay deactivated.
+                    // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
                     await Bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].FullName], "", update.Message.MessageId);
                 }
                 catch (Exception ex)
