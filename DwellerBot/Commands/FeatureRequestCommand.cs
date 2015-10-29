@@ -31,9 +31,9 @@ namespace DwellerBot.Commands
                 if (args.Length == 1)
                 {
                     // List all opened or done features
-                    if (args[0].Equals("list") || args[0].Equals("done"))
+                    if (args[0].Equals("list") || args[0].Equals("done") || args[0].Equals("all"))
                     {
-                        bool listOpened = args[0].Equals("list");
+                        bool listOpened = args[0].Equals("list") || args[0].Equals("all");
                         string result = "";
                         foreach (var pair in _requests)
                         {
