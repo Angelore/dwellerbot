@@ -126,7 +126,7 @@ namespace DwellerBot
                                 ErrorCount++;
                             }
                         }
-                        else // Check if the command mas typed in a russian layout
+                        else if (Commands.ContainsKey(parsedMessage["interpretedCommand"]))// Check if the command mas typed in a russian layout
                         {
                             try
                             {
