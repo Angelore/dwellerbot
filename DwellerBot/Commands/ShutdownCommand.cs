@@ -23,7 +23,7 @@ namespace DwellerBot.Commands
                 return;
 
 	        ICommand command;
-	        if (_dwellerBot.Commands.TryGetValue("/savestate", out command))
+	        if (_dwellerBot.CommandService.RegisteredCommands.TryGetValue("/savestate", out command))
 	        {
 		        await command.ExecuteAsync(update, parsedMessage);
             }

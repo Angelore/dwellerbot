@@ -22,13 +22,7 @@ namespace DwellerBot.Commands
             if (!DwellerBot.IsUserOwner(update.Message.From))
                 return;
 
-            foreach (var command in _dwellerBot.Commands.Values)
-            {
-                if (command is ISaveable)
-                {
-                    ((ISaveable)command).SaveState();
-                }
-            }
+            _dwellerBot.CommandService.SaveCommandStates();
 
             await Bot.SendTextMessage(update.Message.Chat.Id, "State saved.", false, update.Message.MessageId);
         }
