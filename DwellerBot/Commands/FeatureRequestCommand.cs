@@ -98,7 +98,7 @@ namespace DwellerBot.Commands
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.Error(ex, "An error as occured during parsing of {0} file.", _featureRequestsFilePath);
+                        Log.Logger.Error("An error as occured during parsing of {0} file. Error message: {1}", _featureRequestsFilePath, ex.Message);
                     }
                     if (config != null)
                     {

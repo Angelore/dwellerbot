@@ -58,7 +58,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured during file resending!");
+                    Log.Logger.Error("An error has occured during file resending! Error message: {0}", ex.Message);
                 }
                 return;
             }
@@ -73,7 +73,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured during file sending!");
+                    Log.Logger.Error(ex, "An error has occured during file sending! Error message: {0}", ex.Message);
                 }
             }
         }
@@ -106,7 +106,7 @@ namespace DwellerBot.Commands
                     }
                     catch (Exception ex)
                     {
-                        Log.Logger.Error(ex, "An error as occured during parsing of {0} file.", _cacheFilePath);
+                        Log.Logger.Error("An error as occured during parsing of {0} file. Error message: {1}", _cacheFilePath, ex.Message);
                     }
                     if (config != null)
                         _sentFiles = config;

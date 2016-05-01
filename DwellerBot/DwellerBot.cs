@@ -91,7 +91,7 @@ namespace DwellerBot
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured while receiving updates.");
+                    Log.Logger.Error("An error has occured while receiving updates. Error message: {0}", ex.Message);
                     ErrorCount++;
                 }
 
@@ -110,7 +110,7 @@ namespace DwellerBot
                         }
                         catch (Exception ex)
                         {
-                            Log.Logger.Error(ex, "An error has occured during message parsing.");
+                            Log.Logger.Error("An error has occured during message parsing. Error message: {0}", ex.Message);
                             ErrorCount++;
                         }
                         if (Commands.ContainsKey(parsedMessage["command"]))
@@ -122,7 +122,7 @@ namespace DwellerBot
                             }
                             catch (Exception ex)
                             {
-                                Log.Logger.Error(ex, "An error has occured during {0} command.", parsedMessage["command"]);
+                                Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["command"], ex.Message);
                                 ErrorCount++;
                             }
                         }
@@ -135,7 +135,7 @@ namespace DwellerBot
                             }
                             catch (Exception ex)
                             {
-                                Log.Logger.Error(ex, "An error has occured during {0} command.", parsedMessage["interpretedCommand"]);
+                                Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["interpretedCommand"], ex.Message);
                                 ErrorCount++;
                             }
                         }
