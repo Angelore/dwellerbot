@@ -92,12 +92,16 @@ namespace DwellerBot
                     ErrorCount++;
                 }
 
+                List<Task> tasks = new List<Task>();
                 foreach (var update in updates)
                 {
-                    CommandService.HandleUpdate(update);
+                    //var updateTask = Task.Factory.StartNew(() => CommandService.HandleUpdate(update));
+                    var updateTask = CommandService.HandleUpdate(update);
+                    tasks.Add(updateTask);
 
                     Offset = update.Id + 1;
                 }
+                Task.WaitAll(tasks.ToArray());
 
                 await Task.Delay(1000);
             }

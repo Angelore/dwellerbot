@@ -69,7 +69,10 @@ namespace DwellerBot.Commands
                 {
                     await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
                     var message = await Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ), "", update.Message.MessageId);
-                    _sentFiles.Add(_files[ind].FullName, message.Photo.Last().FileId);
+                    lock (_files)
+                    {
+                        _sentFiles.Add(_files[ind].FullName, message.Photo.Last().FileId);
+                    }
                 }
                 catch (Exception ex)
                 {

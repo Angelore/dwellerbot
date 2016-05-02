@@ -57,7 +57,7 @@ namespace DwellerBot.Services
             }
         }
 
-        public async void HandleUpdate(Update update)
+        public async Task HandleUpdate(Update update)
         {
             if (update.Message.Text != null)
             {
