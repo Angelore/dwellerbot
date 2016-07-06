@@ -100,6 +100,7 @@
     <Compile Include="Models\CurrencyContainerXml.cs" />
     <Compile Include="DwellerBot.cs" />
     <Compile Include="ICommand.cs" />
+    <Compile Include="Models\NbrbApi.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CommandService.cs" />

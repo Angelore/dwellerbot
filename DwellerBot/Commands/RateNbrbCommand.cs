@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using DwellerBot.Models;
 using Newtonsoft.Json;
 using Telegram.Bot;
@@ -16,11 +15,13 @@ namespace DwellerBot.Commands
 {
     class RateNbrbCommand: CommandBase
     {
-        private const string CurrencyQueryUrl = @"http://www.nbrb.by/Services/XmlExRates.aspx";
-        private const string OnDateParam = @"?ondate=";
+        private const string CurrencyListUrl = @"http://www.nbrb.by/API/ExRates/Currencies";
+        private const string CurrencyRatesApi = @"http://www.nbrb.by/API/ExRates/Rates?onDate={0}&Periodicity=0";
+        private const string CurrencyRateApi = @"http://www.nbrb.by/API/ExRates/Rates/{0}?onDate={1}";
         private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"};
 
-        private CurrencyContainerXml _previousDayCurrencyContainer;
+        private List<Currency> _currencies = new List<Currency>();
+        private List<Rate> _previousRates;
 
         public RateNbrbCommand(Api bot):base(bot)
         {
@@ -29,53 +30,81 @@ namespace DwellerBot.Commands
 
         public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
         {
-            var responseStream = new StreamReader(await GetCurrencyRates());
-            var xmlDeserializer = new XmlSerializer(typeof(CurrencyContainerXml.DailyExRates));
-            var currencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates};
+            // initialize currencies
+            if (!_currencies.Any())
+            {
+                try
+                {
+                    _currencies = await GetCurrencyList();
+                }
+                catch(Exception ex)
+                {
+                    Log.Logger.Error("Unable to get currencies list. Error message: {0}", ex.Message);
+                    await Bot.SendTextMessage(update.Message.Chat.Id, "Сервис НБРБ не отвечает на запрос списка валют.", false, update.Message.MessageId, null, ParseMode.Markdown);
+                    return;
+                }
+            }
+            
+            List<string> currenciesList = new List<string>();
+            if (parsedMessage.ContainsKey("message"))
+            {
+                currenciesList = new List<string>() { parsedMessage["message"] };
+            }
+            if (currenciesList.Count == 0)
+                currenciesList = _defaultCurrenciesList;
+
+            List<Rate> rates = null;
+            try
+            {
+                rates = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), currenciesList);
+            }
+            catch(Exception ex)
+            {
+                Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
+            }
+
+            if (rates == null || !rates.Any())
+            {
+                await Bot.SendTextMessage(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, update.Message.MessageId, null, ParseMode.Markdown);
+                return;
+            }
 
             // Get data for previous date for comparison
-            if (_previousDayCurrencyContainer == null ||
-                DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(1) !=
-                DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null))
+            if (_previousRates == null ||
+                !_previousRates.Any() ||
+                _previousRates.First().Date.AddDays(1) != rates.First().Date)
             {
-                var ondate = DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).AddDays(-1);
+                var ondate = rates.First().Date.AddDays(-1);
                 // Rates do not update on weekend (at least here, duh)
                 if (ondate.DayOfWeek == DayOfWeek.Sunday)
                 {
                     ondate = ondate.AddDays(-2);
                 }
-                var ondatestring = ondate.ToString(@"MM\/dd\/yyyy");
-                responseStream = new StreamReader(await GetCurrencyRates(OnDateParam + ondatestring));
-                _previousDayCurrencyContainer = new CurrencyContainerXml() { DailyRates = xmlDeserializer.Deserialize(responseStream) as CurrencyContainerXml.DailyExRates };
+                _previousRates = await GetCurrencyRatesFromApi(ondate, currenciesList);
             }
+
+            var isComparisonPossible = _previousRates != null && _previousRates.Any();
 
             var sb = new StringBuilder();
             sb.Append("Курсы валют на ");
-            sb.AppendLine(DateTime.ParseExact(currencyContainer.DailyRates.Date, "MM/dd/yyyy", null).ToShortDateString());
-            sb.Append("По отношению к ");
-            sb.AppendLine(DateTime.ParseExact(_previousDayCurrencyContainer.DailyRates.Date, "MM/dd/yyyy", null).ToShortDateString());
-            sb.AppendLine();
-
-            List<string> currenciesList = new List<string>();
-            if (parsedMessage.ContainsKey("message"))
+            sb.AppendLine(rates.First().Date.ToShortDateString());
+            if (isComparisonPossible)
             {
-                var names = parsedMessage["message"].Split(',').ToList();
-                currenciesList.AddRange(names.Select(cname => cname.ToUpper()));
+                sb.Append("По отношению к ");
+                sb.AppendLine(_previousRates.First().Date.ToShortDateString());
+                sb.AppendLine();
             }
-            if (currenciesList.Count == 0)
-                currenciesList = _defaultCurrenciesList;
 
-            foreach (var currency in currencyContainer.DailyRates.Currency.Where(x => currenciesList.Contains(x.CharCode)))
+            foreach (var currency in rates.Where(r => currenciesList.Contains(r.Cur_Abbreviation)))
             {
-                sb.Append(currency.CharCode + ": " + currency.Rate);
-                if (_previousDayCurrencyContainer != null)
+                sb.Append(currency.Cur_Abbreviation + ": " + currency.Cur_OfficialRate + $" `[{currency.Cur_Scale}]`");
+                if (isComparisonPossible)
                 {
-                    var diff = currency.Rate -
-                               _previousDayCurrencyContainer.DailyRates.Currency.First(
-                                   x => x.CharCode == currency.CharCode).Rate;
+                    var diff = currency.Cur_OfficialRate -
+                               _previousRates.First(x => x.Cur_Abbreviation == currency.Cur_Abbreviation).Cur_OfficialRate;
                     sb.Append(" _(");
-                    sb.Append(diff > 0 ? "+" : "-");
-                    sb.Append(Math.Abs(diff));
+                    sb.Append(diff > 0 ? "+" : "");
+                    sb.Append(diff);
                     sb.Append(")_");
                 }
                 sb.AppendLine();
@@ -84,10 +113,38 @@ namespace DwellerBot.Commands
             await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId, null, ParseMode.Markdown);
         }
 
-        public async Task<Stream> GetCurrencyRates(string param = "")
+        public async Task<List<Currency>> GetCurrencyList()
         {
             var hc = new HttpClient();
-            return await hc.GetStreamAsync(CurrencyQueryUrl + param);
+            var currencyStream = new StreamReader(await hc.GetStreamAsync(CurrencyListUrl));
+            var streamAsString = currencyStream.ReadToEnd();
+            var currencies = JsonConvert.DeserializeObject<List<Currency>>(streamAsString);
+
+            return currencies;
+        }
+
+        public async Task<List<Rate>> GetCurrencyRatesFromApi(DateTime date, List<string> currenciesList)
+        {
+            var hc = new HttpClient();
+            string queryString;
+            if (currenciesList.Count == 1)
+            {
+                var currency = _currencies.Where(c => c.Cur_Abbreviation.ToLower().Equals(currenciesList.First().ToLower())).FirstOrDefault();
+                if (currency == null)
+                    return null;
+
+                queryString = string.Format(CurrencyRateApi, currency.Cur_ID, date.ToString("yyyy-MM-dd"));
+            }
+            else
+            {
+                queryString = string.Format(CurrencyRatesApi, date.ToString("yyyy-MM-dd"));
+            }
+
+            var stream = await hc.GetStreamAsync(queryString);
+            var currencyRatesStream = new StreamReader(stream);
+            var rates = JsonConvert.DeserializeObject<List<Rate>>(currencyRatesStream.ReadToEnd());
+
+            return rates;
         }
     }
 }
