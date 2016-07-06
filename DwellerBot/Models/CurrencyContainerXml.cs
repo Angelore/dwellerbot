@@ -48,20 +48,20 @@
         public partial class DailyExRatesCurrency
         {
 
-            private ushort numCodeField;
+            private int numCodeField;
 
             private string charCodeField;
 
-            private ushort scaleField;
+            private int scaleField;
 
             private string nameField;
 
             private decimal rateField;
 
-            private ushort idField;
+            private int idField;
 
             /// <remarks/>
-            public ushort NumCode
+            public int NumCode
             {
                 get
                 {
@@ -87,7 +87,7 @@
             }
 
             /// <remarks/>
-            public ushort Scale
+            public int Scale
             {
                 get
                 {
@@ -127,7 +127,7 @@
 
             /// <remarks/>
             [System.Xml.Serialization.XmlAttributeAttribute()]
-            public ushort Id
+            public int Id
             {
                 get
                 {

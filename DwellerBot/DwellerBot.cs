@@ -101,7 +101,15 @@ namespace DwellerBot
 
                     Offset = update.Id + 1;
                 }
-                Task.WaitAll(tasks.ToArray());
+                try
+                {
+                    Task.WaitAll(tasks.ToArray());
+                }
+                catch (Exception ex)
+                {
+                    // for debug
+                    throw;
+                }
 
                 await Task.Delay(1000);
             }

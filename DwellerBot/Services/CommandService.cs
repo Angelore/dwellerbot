@@ -59,7 +59,7 @@ namespace DwellerBot.Services
 
         public async Task HandleUpdate(Update update)
         {
-            if (update.Message.Text != null)
+            if (update.Message != null && update.Message.Text != null)
             {
                 Log.Logger.Debug("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text);
 
