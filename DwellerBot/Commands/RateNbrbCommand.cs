@@ -63,10 +63,23 @@ namespace DwellerBot.Commands
                 Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
             }
 
-            if (rates == null || !rates.Any())
+            if (rates == null)
             {
                 await Bot.SendTextMessage(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, update.Message.MessageId, null, ParseMode.Markdown);
                 return;
+            }
+
+            // if the array is empty, try getting rates for today instead of tomorrow
+            if (!rates.Any())
+            {
+                try
+                {
+                    rates = await GetCurrencyRatesFromApi(DateTime.Today, currenciesList);
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
+                }
             }
 
             // Get data for previous date for comparison
