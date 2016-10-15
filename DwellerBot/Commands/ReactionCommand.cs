@@ -8,6 +8,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Newtonsoft.Json;
 using Serilog;
+using Telegram.Bot.Types.Enums;
 
 namespace DwellerBot.Commands
 {
@@ -18,7 +19,7 @@ namespace DwellerBot.Commands
         private readonly string _cacheFilePath;
         private Dictionary<string, string> _sentFiles;
 
-        public ReactionCommand(Api bot, List<string> folderNames, string cacheFilePath):base(bot)
+        public ReactionCommand(TelegramBotClient bot, List<string> folderNames, string cacheFilePath):base(bot)
         {
             _rng = new Random();
             _files = new List<FileInfo>();
@@ -42,7 +43,7 @@ namespace DwellerBot.Commands
             if (_files.Count == 0)
             {
                 await
-                    Bot.SendTextMessage(update.Message.Chat.Id, "No files available.", false, update.Message.MessageId);
+                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", false, false, update.Message.MessageId);
                 return;
             }
 
@@ -54,7 +55,7 @@ namespace DwellerBot.Commands
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
                     // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhoto(update.Message.Chat.Id, _sentFiles[_files[ind].FullName], "", update.Message.MessageId);
+                    await Bot.SendPhotoAsync(update.Message.Chat.Id, _sentFiles[_files[ind].FullName], "", false, update.Message.MessageId);
                 }
                 catch (Exception ex)
                 {
@@ -67,8 +68,8 @@ namespace DwellerBot.Commands
             {
                 try
                 {
-                    await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    var message = await Bot.SendPhoto(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ), "", update.Message.MessageId);
+                    await Bot.SendChatActionAsync(update.Message.Chat.Id, ChatAction.UploadPhoto);
+                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs ), "", false, update.Message.MessageId);
                     lock (_files)
                     {
                         _sentFiles.Add(_files[ind].FullName, message.Photo.Last().FileId);
@@ -76,7 +77,7 @@ namespace DwellerBot.Commands
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured during file sending! Error message: {0}", ex.Message);
+                    Log.Logger.Error(ex, "An error has occured during file sending! Error message: {0} File name: {1}", ex.Message, _files[ind].FullName);
                 }
             }
         }

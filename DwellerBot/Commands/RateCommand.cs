@@ -15,7 +15,7 @@ namespace DwellerBot.Commands
     {
         private const string CurrencyQueryUrl = @"https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.xchange+where+pair+=+%22USDBYR,EURBYR,RUBBYR%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
 
-        public RateCommand(Api bot):base(bot)
+        public RateCommand(TelegramBotClient bot):base(bot)
         {
             ;
         }
@@ -32,7 +32,7 @@ namespace DwellerBot.Commands
             {
                 sb.AppendLine(currency.Name.Substring(0, 3) + ": " + currency.Rate.Substring(0, currency.Rate.Length - 2));
             }
-            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetCurrencyRates()

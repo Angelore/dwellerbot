@@ -11,6 +11,7 @@ copy /Y HtmlAgilityPack.dll %publishpath%
 copy /Y Newtonsoft.Json.dll %publishpath%
 copy /Y Serilog.dll %publishpath%
 copy /Y Serilog.FullNetFx.dll %publishpath%
+copy /Y Serilog.Sinks.ColoredConsole.dll %publishpath%
 copy /Y System.Net.Http.Extensions.dll %publishpath%
 copy /Y System.Net.Http.Formatting.dll %publishpath%
 copy /Y System.Net.Http.Primitives.dll %publishpath%

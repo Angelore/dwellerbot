@@ -12,7 +12,7 @@ namespace DwellerBot.Commands
     {
         private DwellerBot _dwellerBot;
 
-        public ShutdownCommand(Api bot, DwellerBot dwellerBot):base(bot)
+        public ShutdownCommand(TelegramBotClient bot, DwellerBot dwellerBot):base(bot)
         {
             _dwellerBot = dwellerBot;
         }
@@ -30,8 +30,8 @@ namespace DwellerBot.Commands
 
             _dwellerBot.IsOnline = false;
 
-            await Bot.SendTextMessage(update.Message.Chat.Id, "Shutting down.", false, update.Message.MessageId);
-            await Bot.GetUpdates(update.Id + 1);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Shutting down.", false, false, update.Message.MessageId);
+            await Bot.GetUpdatesAsync(update.Id + 1);
         }
     }
 }

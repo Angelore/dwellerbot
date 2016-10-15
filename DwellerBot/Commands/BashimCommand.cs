@@ -20,7 +20,7 @@ namespace DwellerBot.Commands
         private readonly string RatingTagId = "b_q_h";
         private readonly string QuoteLineBreak = "<br>";
 
-        public BashimCommand(Api bot):base(bot)
+        public BashimCommand(TelegramBotClient bot):base(bot)
         { }
 
         public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
@@ -47,7 +47,7 @@ namespace DwellerBot.Commands
             
             var result = rating.InnerText + Environment.NewLine + quote.InnerHtml.Replace(QuoteLineBreak, Environment.NewLine);
             
-            await Bot.SendTextMessage(update.Message.Chat.Id, HttpUtility.HtmlDecode(result), false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, HttpUtility.HtmlDecode(result), false, false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetHtml ()

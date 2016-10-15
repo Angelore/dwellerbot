@@ -22,7 +22,7 @@ namespace DwellerBot
         internal const string OwnerUsername = "angelore";
         internal const int OwnerId = 99541817;
 
-        private readonly Api _bot;
+        private readonly TelegramBotClient _bot;
 
         private Random _rng;
 
@@ -42,7 +42,7 @@ namespace DwellerBot
             _rng = new Random();
 
             // Get bot api token
-            _bot = new Api(settings.keys.First(x => x.name == "dwellerBotKey").value);
+            _bot = new TelegramBotClient(settings.keys.First(x => x.name == "dwellerBotKey").value);
 
             Offset = 0;
             CommandsProcessed = 0;
@@ -75,7 +75,7 @@ namespace DwellerBot
         
         public async Task Run()
         {
-            var me = await _bot.GetMe();
+            var me = await _bot.GetMeAsync();
             
             Log.Logger.Information("{0} is online and fully functional." + Environment.NewLine, me.Username);
 
@@ -84,7 +84,7 @@ namespace DwellerBot
                 Update[] updates = new Update[0];
                 try
                 {
-                    updates = await _bot.GetUpdates(Offset);
+                    updates = await _bot.GetUpdatesAsync(Offset);
                 }
                 catch (Exception ex)
                 {

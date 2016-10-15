@@ -21,7 +21,7 @@ namespace DwellerBot.Commands
         private readonly string _apiKey;
         private string _location;
 
-        public WeatherCommand(Api bot, string apiKey):base(bot)
+        public WeatherCommand(TelegramBotClient bot, string apiKey):base(bot)
         {
             _apiKey = apiKey;
         }
@@ -45,7 +45,7 @@ namespace DwellerBot.Commands
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());
             if (weatherContainer.cod == 404)
             {
-                await Bot.SendTextMessage(update.Message.Chat.Id, "Invalid arguments.", false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Invalid arguments.", false, false, update.Message.MessageId);
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace DwellerBot.Commands
             sb.AppendLine("Температура: " + weatherContainer.main.temp + " *C, " + weatherContainer.weather[0].description);
             sb.AppendLine("Влажность: " + weatherContainer.main.humidity + "%");
             sb.AppendLine("Ветер: " + weatherContainer.wind.speed + " м/с");
-            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetWeather()
