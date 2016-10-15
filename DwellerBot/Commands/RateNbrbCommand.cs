@@ -41,7 +41,7 @@ namespace DwellerBot.Commands
                 catch(Exception ex)
                 {
                     Log.Logger.Error("Unable to get currencies list. Error message: {0}", ex.Message);
-                    await Bot.SendTextMessage(update.Message.Chat.Id, "Сервис НБРБ не отвечает на запрос списка валют.", false, update.Message.MessageId, null, ParseMode.Markdown);
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не отвечает на запрос списка валют.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
                     return;
                 }
             }
@@ -66,7 +66,7 @@ namespace DwellerBot.Commands
 
             if (rates == null)
             {
-                await Bot.SendTextMessage(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, update.Message.MessageId, null, ParseMode.Markdown);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
                 return;
             }
 
