@@ -12,7 +12,7 @@ namespace DwellerBot.Commands
     {
         private DwellerBot _dwellerBot;
 
-        public SaveStateCommand(Api bot, DwellerBot dwellerBot):base(bot)
+        public SaveStateCommand(TelegramBotClient bot, DwellerBot dwellerBot):base(bot)
         {
             _dwellerBot = dwellerBot;
         }
@@ -24,7 +24,7 @@ namespace DwellerBot.Commands
 
             _dwellerBot.CommandService.SaveCommandStates();
 
-            await Bot.SendTextMessage(update.Message.Chat.Id, "State saved.", false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "State saved.", false, false, update.Message.MessageId);
         }
     }
 }

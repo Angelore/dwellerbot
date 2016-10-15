@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Serilog;
+using Telegram.Bot.Types.Enums;
 
 namespace DwellerBot.Commands
 {
@@ -22,7 +23,7 @@ namespace DwellerBot.Commands
 
         private CurrencyContainerXml _previousDayCurrencyContainer;
 
-        public RateNbrbCommand(Api bot):base(bot)
+        public RateNbrbCommand(TelegramBotClient bot):base(bot)
         {
             ;
         }
@@ -81,7 +82,7 @@ namespace DwellerBot.Commands
                 sb.AppendLine();
             }
 
-            await Bot.SendTextMessage(update.Message.Chat.Id, sb.ToString(), false, update.Message.MessageId, null, ParseMode.Markdown);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
         }
 
         public async Task<Stream> GetCurrencyRates(string param = "")

@@ -17,7 +17,7 @@ namespace DwellerBot.Commands
         private Dictionary<int, string> _requests;
         private int _requestIndex;
 
-        public FeatureRequestCommand(Api bot, string featureRequestsFilePath):base(bot)
+        public FeatureRequestCommand(TelegramBotClient bot, string featureRequestsFilePath):base(bot)
         {
             _featureRequestsFilePath = featureRequestsFilePath;
             _requests = new Dictionary<int, string>();
@@ -44,7 +44,7 @@ namespace DwellerBot.Commands
                             result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
                         }
 
-                        await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, false, false, update.Message.MessageId);
                         return;
                     }
                 }
@@ -55,7 +55,7 @@ namespace DwellerBot.Commands
                     {
                         _requests[index] = "[Done] " + _requests[index];
                         var result = string.Format("{0}: {1}{2}", index, _requests[index], Environment.NewLine);
-                        await Bot.SendTextMessage(update.Message.Chat.Id, result, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, false, false, update.Message.MessageId);
                         return;
                     }
                 }
@@ -63,11 +63,11 @@ namespace DwellerBot.Commands
                 _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", update.Message.From.FirstName, parsedMessage["message"]));
                 _requestIndex++;
 
-                await Bot.SendTextMessage(update.Message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), false, false, update.Message.MessageId);
                 return;
             }
 
-            await Bot.SendTextMessage(update.Message.Chat.Id, "You have to describe your request :)\nlist - opened requests\ndone - completed requests", false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "You have to describe your request :)\nlist - opened requests\ndone - completed requests", false, false, update.Message.MessageId);
         }
 
         public void SaveState()

@@ -10,9 +10,9 @@ namespace DwellerBot.Commands
 {
     class CommandBase : ICommand
     {
-        protected Api Bot { get; private set; }
+        protected TelegramBotClient  Bot { get; private set; }
 
-        public CommandBase(Api bot)
+        public CommandBase(TelegramBotClient bot)
         {
             Bot = bot;
         }
