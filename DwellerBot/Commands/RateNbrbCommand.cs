@@ -11,6 +11,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Serilog;
 using Telegram.Bot.Types.Enums;
+using Newtonsoft.Json.Linq;
 
 namespace DwellerBot.Commands
 {
@@ -19,7 +20,8 @@ namespace DwellerBot.Commands
         private const string CurrencyListUrl = @"http://www.nbrb.by/API/ExRates/Currencies";
         private const string CurrencyRatesApi = @"http://www.nbrb.by/API/ExRates/Rates?onDate={0}&Periodicity=0";
         private const string CurrencyRateApi = @"http://www.nbrb.by/API/ExRates/Rates/{0}?onDate={1}";
-        private readonly List<string> _defaultCurrenciesList  = new List<string> {"USD","EUR","RUB"};
+        private readonly List<string> _defaultCurrenciesList  = new List<string> {"usd","eur","rub"};
+        private const string BaseCurrency = "byn";
 
         private List<Currency> _currencies = new List<Currency>();
         private List<Rate> _previousRates;
@@ -47,19 +49,52 @@ namespace DwellerBot.Commands
             }
             
             List<string> currenciesList = new List<string>();
+            List<string> message = new List<string>();
+
             if (parsedMessage.ContainsKey("message"))
             {
-                currenciesList = new List<string>() { parsedMessage["message"] };
-            }
-            if (currenciesList.Count == 0)
-                currenciesList = _defaultCurrenciesList;
+                message = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
+                if (message.Contains("to"))
+                {
+                    if (message.Count != 4)
+                    {
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверное количество параметров. Формат использования: \"/rate 300 usd to rub\"", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                        return;
+                    }
 
+                    int quantity;
+                    bool parseResult = int.TryParse(message[0], out quantity);
+                    if (!parseResult)
+                    {
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверно введено количество валюты.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                        return;
+                    }
+
+                    currenciesList.Add(message[1]);
+                    currenciesList.Add(message[3]);
+                    await ConverterRatesCommand(update, currenciesList, quantity);
+                }
+                else
+                {
+                    currenciesList = message.Select(s => s.ToLower()).ToList();
+                    await RegularRatesCommand(update, currenciesList);
+                }
+            }
+            else
+            {
+                currenciesList = _defaultCurrenciesList;
+                await RegularRatesCommand(update, currenciesList);
+            }
+        }
+
+        private async Task RegularRatesCommand(Update update, List<string> currenciesList)
+        {
             List<Rate> rates = null;
             try
             {
                 rates = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), currenciesList);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
             }
@@ -84,9 +119,9 @@ namespace DwellerBot.Commands
             }
 
             // Get data for previous date for comparison
-            if (_previousRates == null ||
-                !_previousRates.Any() ||
-                _previousRates.First().Date.AddDays(1) != rates.First().Date)
+            //if (_previousRates == null ||
+            //    !_previousRates.Any() ||
+            //    _previousRates.First().Date.AddDays(1) != rates.First().Date)
             {
                 var ondate = rates.First().Date.AddDays(-1);
                 // Rates do not update on weekend (at least here, duh)
@@ -109,7 +144,7 @@ namespace DwellerBot.Commands
                 sb.AppendLine();
             }
 
-            foreach (var currency in rates.Where(r => currenciesList.Contains(r.Cur_Abbreviation)))
+            foreach (var currency in rates.Where(r => currenciesList.Contains(r.Cur_Abbreviation.ToLower())))
             {
                 sb.Append(currency.Cur_Abbreviation + ": " + currency.Cur_OfficialRate + $" `[{currency.Cur_Scale}]`");
                 if (isComparisonPossible)
@@ -123,6 +158,72 @@ namespace DwellerBot.Commands
                 }
                 sb.AppendLine();
             }
+
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
+        }
+
+        private async Task ConverterRatesCommand(Update update, List<string> currenciesList, int quantity)
+        {
+            List<Rate> rates = null;
+            try
+            {
+                rates = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), currenciesList);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
+            }
+
+            if (rates == null)
+            {
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                return;
+            }
+
+            // if the array is empty, try getting rates for today instead of tomorrow
+            if (!rates.Any())
+            {
+                try
+                {
+                    rates = await GetCurrencyRatesFromApi(DateTime.Today, currenciesList);
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
+                }
+            }
+
+            if (currenciesList.Contains(BaseCurrency))
+            {
+                rates.Add(new Rate { Cur_Abbreviation = BaseCurrency, Cur_Scale = 1, Cur_OfficialRate = 1 });
+            }
+
+            Rate firstCur;
+            Rate secondCur;
+            try
+            {
+                firstCur = rates.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.First());
+                secondCur = rates.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.Last());
+            }
+            catch(Exception ex)
+            {
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Произошла ошибка при обработке результатов запроса. Скорее всего, неверно введена валюта.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                return;
+            }
+
+            decimal resultingQuantity;
+            resultingQuantity = quantity * (firstCur.Cur_OfficialRate.Value / firstCur.Cur_Scale) / (secondCur.Cur_OfficialRate.Value / secondCur.Cur_Scale);
+
+            var sb = new StringBuilder();
+            sb.Append("Курсы валют на ");
+            sb.AppendLine(rates.First().Date.ToShortDateString());
+            sb.AppendLine();
+            
+            sb.Append(string.Format("{0} {1} = {2} {3}",
+                quantity,
+                currenciesList.First().ToUpper(),
+                Math.Round(resultingQuantity, 4),
+                currenciesList.Last().ToUpper()));
 
             await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
         }
@@ -143,7 +244,9 @@ namespace DwellerBot.Commands
             string queryString;
             if (currenciesList.Count == 1)
             {
-                var currency = _currencies.Where(c => c.Cur_Abbreviation.ToLower().Equals(currenciesList.First().ToLower())).FirstOrDefault();
+                var currency = _currencies.Where(c => c.Cur_Abbreviation.ToLower().Equals(currenciesList.First().ToLower()))
+                                          .OrderByDescending(x => x.Cur_ID) // a case for outdated currencies that are still returned by the bank, i.e. RUB is returned as 190 and 298
+                                          .FirstOrDefault();
                 if (currency == null)
                     return null;
 
@@ -154,11 +257,20 @@ namespace DwellerBot.Commands
                 queryString = string.Format(CurrencyRatesApi, date.ToString("yyyy-MM-dd"));
             }
 
+
             var stream = await hc.GetStreamAsync(queryString);
-            var currencyRatesStream = new StreamReader(stream);
-            var rates = JsonConvert.DeserializeObject<List<Rate>>(currencyRatesStream.ReadToEnd());
+            var currencyRates = new StreamReader(stream).ReadToEnd();
+            var rates = JsonConvert.DeserializeObject<List<Rate>>(EnsureJsonArray(currencyRates));
 
             return rates;
+        }
+
+        // HACK: find out how to do this using converter itself
+        private string EnsureJsonArray(string json)
+        {
+            if (json.First() != '[' || json.Last() != ']')
+                return "[" + json + "]";
+            return json;
         }
     }
 }
