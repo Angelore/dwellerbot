@@ -16,6 +16,7 @@ copy /Y System.Net.Http.Extensions.dll %publishpath%
 copy /Y System.Net.Http.Formatting.dll %publishpath%
 copy /Y System.Net.Http.Primitives.dll %publishpath%
 copy /Y Telegram.Bot.dll %publishpath%
+copy /Y Resources\changelog.json %publishpath%\Resources
 @echo off
 echo Done
 
