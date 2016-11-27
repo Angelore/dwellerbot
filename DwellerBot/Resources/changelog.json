@@ -1,0 +1,7 @@
+﻿[
+  {
+    "versionNumber": "0.1",
+    "releaseDate": "27.11.2016",
+    "description": "- Fixed the /rate command, now properly works with single argument\n- Added the subcommand `/rate [[number]] [[currency1]] to [[currency2]]`\n- Added changelog command"
+  }
+]

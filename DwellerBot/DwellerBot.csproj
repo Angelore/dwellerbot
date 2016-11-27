@@ -85,6 +85,7 @@
   <ItemGroup>
     <Compile Include="Commands\AskStasonCommand.cs" />
     <Compile Include="Commands\BashimCommand.cs" />
+    <Compile Include="Commands\ChangelogCommand.cs" />
     <Compile Include="Commands\CommandBase.cs" />
     <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\FeatureRequestCommand.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="Commands\ShutdownCommand.cs" />
     <Compile Include="Commands\WeatherCommand.cs" />
     <Compile Include="ISaveable.cs" />
+    <Compile Include="Models\ChangelogContainer.cs" />
     <Compile Include="Models\CurrencyContainer.cs" />
     <Compile Include="Commands\RateCommand.cs" />
     <Compile Include="Models\CurrencyContainerXml.cs" />
@@ -111,6 +113,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <Content Include="Resources\changelog.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\Settings.xml">
