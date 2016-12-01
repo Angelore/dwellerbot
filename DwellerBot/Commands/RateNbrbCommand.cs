@@ -70,8 +70,8 @@ namespace DwellerBot.Commands
                         return;
                     }
 
-                    currenciesList.Add(message[1]);
-                    currenciesList.Add(message[3]);
+                    currenciesList.Add(message[1].ToLower());
+                    currenciesList.Add(message[3].ToLower());
                     await ConverterRatesCommand(update, currenciesList, quantity);
                 }
                 else
@@ -164,28 +164,29 @@ namespace DwellerBot.Commands
 
         private async Task ConverterRatesCommand(Update update, List<string> currenciesList, int quantity)
         {
-            List<Rate> rates = null;
+            DateTime date = DateTime.Today;
+            // TODO: fix this shit (lists)
+            List<Rate> rate1 = null;
+            List<Rate> rate2 = null;
             try
             {
-                rates = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), currenciesList);
+                date = DateTime.Today.AddDays(1);
+                rate1 = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), new List<string>() { currenciesList.First() });
+                rate2 = await GetCurrencyRatesFromApi(DateTime.Today.AddDays(1), new List<string>() { currenciesList.Last() });
             }
             catch (Exception ex)
             {
                 Log.Logger.Error("Unable to get currencies. Error message: {0}", ex.Message);
             }
-
-            if (rates == null)
-            {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
-                return;
-            }
-
+            
             // if the array is empty, try getting rates for today instead of tomorrow
-            if (!rates.Any())
+            if ((rate1 == null || rate2 == null) || (!rate1.Any() || !rate2.Any()))
             {
                 try
                 {
-                    rates = await GetCurrencyRatesFromApi(DateTime.Today, currenciesList);
+                    date = DateTime.Today;
+                    rate1 = await GetCurrencyRatesFromApi(DateTime.Today, new List<string>() { currenciesList.First() });
+                    rate2 = await GetCurrencyRatesFromApi(DateTime.Today, new List<string>() { currenciesList.Last() });
                 }
                 catch (Exception ex)
                 {
@@ -193,17 +194,25 @@ namespace DwellerBot.Commands
                 }
             }
 
-            if (currenciesList.Contains(BaseCurrency))
+            if (rate1 == null || rate2 == null)
             {
-                rates.Add(new Rate { Cur_Abbreviation = BaseCurrency, Cur_Scale = 1, Cur_OfficialRate = 1 });
+                if (!currenciesList.Contains(BaseCurrency))
+                {
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                    return;
+                }
+                if (rate1 == null)
+                    rate1 = new List<Rate> { new Rate { Cur_Abbreviation = BaseCurrency, Cur_Scale = 1, Cur_OfficialRate = 1 } };
+                else
+                    rate2 = new List<Rate> { new Rate { Cur_Abbreviation = BaseCurrency, Cur_Scale = 1, Cur_OfficialRate = 1 } };
             }
-
+            
             Rate firstCur;
             Rate secondCur;
             try
             {
-                firstCur = rates.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.First());
-                secondCur = rates.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.Last());
+                firstCur = rate1.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.First().ToLower());
+                secondCur = rate2.First(c => c.Cur_Abbreviation.ToLower() == currenciesList.Last().ToLower());
             }
             catch(Exception ex)
             {
@@ -216,7 +225,7 @@ namespace DwellerBot.Commands
 
             var sb = new StringBuilder();
             sb.Append("Курсы валют на ");
-            sb.AppendLine(rates.First().Date.ToShortDateString());
+            sb.AppendLine(date.ToShortDateString());
             sb.AppendLine();
             
             sb.Append(string.Format("{0} {1} = {2} {3}",
