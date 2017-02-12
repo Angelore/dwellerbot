@@ -94,7 +94,7 @@ namespace DwellerBot.Commands
             {
                 ind = _rng.Next(0, _files.Count);
             }
-            while (!_ignoredFiles.Contains(_files[ind].FullName));
+            while (_ignoredFiles.Contains(_files[ind].FullName));
 
             var previousUsedFile = _lastUsedFile;
             _lastUsedFile = _files[ind].FullName;
