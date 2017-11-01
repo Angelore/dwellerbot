@@ -85,7 +85,7 @@ namespace DwellerBot
     </pathGroup>
     <path name="reactionImageCachePath" value="reactionImageCache.json"/>
     <path name="featureRequestsPath" value="featureRequests.json"/>
-    <path name="askStasonResponsesPath" value="askStasonResponses.json"/>
+    <path name="askMeResponsesPath" value="askStasonResponses.json"/>
   </paths>
 </Settings>
 */

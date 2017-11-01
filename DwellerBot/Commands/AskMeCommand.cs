@@ -11,7 +11,7 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class AskStasonCommand : CommandBase
+    class AskMeCommand : CommandBase
     {
         private readonly Random _rng;
         // private readonly string[] _responses = { "Да", "Нет", "Возможно", "Маловероятно", "Конечно", "Спросите позже", "Спроси у Пашана" };
@@ -19,7 +19,7 @@ namespace DwellerBot.Commands
         private readonly List<int> _weights;
         private readonly int _maxRadnomValue;
 
-        public AskStasonCommand(TelegramBotClient bot, string responsesFilePath):base(bot)
+        public AskMeCommand(TelegramBotClient bot, string responsesFilePath):base(bot)
         {
             _rng = new Random();
             _responses = new List<string>();
