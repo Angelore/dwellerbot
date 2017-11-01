@@ -18,7 +18,7 @@ namespace DwellerBot
                              //.WriteTo.RollingFile(logFileTempalate)
                              .CreateLogger();
 
-            var resourceName = @"Resources\Settings.xml";
+            var resourceName = @"Config\Settings.xml";
             Settings settings;
             
             using (FileStream stream = new FileStream(resourceName, FileMode.Open, FileAccess.Read))

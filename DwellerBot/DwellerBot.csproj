@@ -117,12 +117,10 @@
     <None Include="App.config" />
     <None Include="packages.config" />
     <Resource Include="db.ico" />
-    <Content Include="Resources\changelog.json">
+    <Content Include="Config\Settings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Resources\Settings.xml">
+    <Content Include="Resources\changelog.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
