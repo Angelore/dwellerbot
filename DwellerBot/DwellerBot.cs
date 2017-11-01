@@ -18,9 +18,9 @@ namespace DwellerBot
 {
     public class DwellerBot
     {
-        internal const string BotName = @"@DwellerBot";
-        internal const string OwnerUsername = "angelore";
-        internal const int OwnerId = 99541817;
+        private static string BotName;
+        private static string OwnerUsername;
+        private static int OwnerId;
 
         private readonly TelegramBotClient _bot;
 
@@ -36,6 +36,10 @@ namespace DwellerBot
 
         public DwellerBot(Settings settings)
         {
+            BotName = settings.keys.First(x => x.name == "botName").value;
+            OwnerUsername = settings.keys.First(x => x.name == "ownerName").value;
+            OwnerId = int.Parse(settings.keys.First(x => x.name == "ownerId").value);
+
             // move to container
             CommandService = new CommandService(BotName);
 
