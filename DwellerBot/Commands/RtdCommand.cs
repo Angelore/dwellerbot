@@ -38,13 +38,13 @@ namespace DwellerBot.Commands
                         {
                             sb.AppendLine("Dice " + (index + 1) + ": " + (_rng.Next(diceEdges) + 1));
                         }
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
                         return;
                     }
                 }
             }
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Format: [number(?1-6)]d[number(4|6|20|100)].", false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Format: [number(?1-6)]d[number(4|6|20|100)].", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
     }
 }

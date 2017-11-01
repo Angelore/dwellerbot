@@ -32,7 +32,7 @@ namespace DwellerBot.Commands
             {
                 sb.AppendLine(currency.Name.Substring(0, 3) + ": " + currency.Rate.Substring(0, currency.Rate.Length - 2));
             }
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetCurrencyRates()

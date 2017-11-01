@@ -47,7 +47,7 @@ namespace DwellerBot.Commands
             if (_files.Count == 0)
             {
                 await
-                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", false, false, update.Message.MessageId);
+                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
                 return;
             }
 
@@ -70,13 +70,13 @@ namespace DwellerBot.Commands
                                 _ignoredFiles.Add(_lastUsedFile);
 
                             _lastUsedFile = null;
-                            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", false, false, update.Message.MessageId);
+                            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
                             return;
                         }
                     }
                     else
                     {
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
                         return;
                     }
                     return;
@@ -84,7 +84,7 @@ namespace DwellerBot.Commands
                 // add more handles here if needed
                 else
                 {
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", false, false, update.Message.MessageId);
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
                     return;
                 }
             }
@@ -105,7 +105,7 @@ namespace DwellerBot.Commands
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
                     // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhotoAsync(update.Message.Chat.Id, _sentFiles[_files[ind].FullName], "", false, update.Message.MessageId);
+                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_sentFiles[_files[ind].FullName]), "", false, update.Message.MessageId);
                     return;
                 }
                 catch (Exception ex)

@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using DwellerBot.Models;
 
 namespace DwellerBot.Commands
@@ -35,7 +34,7 @@ namespace DwellerBot.Commands
             sb.AppendLine();
             sb.AppendLine(version.description);
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         //*bold text*

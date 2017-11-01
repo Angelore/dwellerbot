@@ -23,7 +23,7 @@ namespace DwellerBot.Commands
             sb.AppendLine("Launch time: " + _dwellerBot.LaunchTime.ToUniversalTime());
             sb.AppendLine("Commands processed: " + _dwellerBot.CommandsProcessed);
             sb.AppendLine("Errors: " + _dwellerBot.ErrorCount);
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace DwellerBot.Commands
             
             var result = rating.InnerText + Environment.NewLine + quote.InnerHtml.Replace(QuoteLineBreak, Environment.NewLine);
             
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, HttpUtility.HtmlDecode(result), false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, HttpUtility.HtmlDecode(result), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         public async Task<Stream> GetHtml ()

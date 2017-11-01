@@ -24,7 +24,7 @@ namespace DwellerBot.Commands
 
             _dwellerBot.CommandService.SaveCommandStates();
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "State saved.", false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "State saved.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }
     }
 }

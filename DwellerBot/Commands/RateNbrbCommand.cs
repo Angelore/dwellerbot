@@ -43,7 +43,7 @@ namespace DwellerBot.Commands
                 catch(Exception ex)
                 {
                     Log.Logger.Error("Unable to get currencies list. Error message: {0}", ex.Message);
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не отвечает на запрос списка валют.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не отвечает на запрос списка валют.", ParseMode.Markdown, false, false, update.Message.MessageId);
                     return;
                 }
             }
@@ -58,7 +58,7 @@ namespace DwellerBot.Commands
                 {
                     if (message.Count != 4)
                     {
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверное количество параметров. Формат использования: \"/rate 300 usd to rub\"", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверное количество параметров. Формат использования: \"/rate 300 usd to rub\"", ParseMode.Markdown, false, false, update.Message.MessageId);
                         return;
                     }
 
@@ -66,7 +66,7 @@ namespace DwellerBot.Commands
                     bool parseResult = int.TryParse(message[0], out quantity);
                     if (!parseResult)
                     {
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверно введено количество валюты.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверно введено количество валюты.", ParseMode.Markdown, false, false, update.Message.MessageId);
                         return;
                     }
 
@@ -101,7 +101,7 @@ namespace DwellerBot.Commands
 
             if (rates == null)
             {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", ParseMode.Markdown, false, false, update.Message.MessageId);
                 return;
             }
 
@@ -159,7 +159,7 @@ namespace DwellerBot.Commands
                 sb.AppendLine();
             }
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         private async Task ConverterRatesCommand(Update update, List<string> currenciesList, int quantity)
@@ -198,7 +198,7 @@ namespace DwellerBot.Commands
             {
                 if (!currenciesList.Contains(BaseCurrency))
                 {
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Сервис НБРБ не вернул данные, либо введенной валюты не существует.", ParseMode.Markdown, false, false, update.Message.MessageId);
                     return;
                 }
                 if (rate1 == null)
@@ -216,7 +216,7 @@ namespace DwellerBot.Commands
             }
             catch(Exception ex)
             {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Произошла ошибка при обработке результатов запроса. Скорее всего, неверно введена валюта.", false, false, update.Message.MessageId, null, ParseMode.Markdown);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Произошла ошибка при обработке результатов запроса. Скорее всего, неверно введена валюта.", ParseMode.Markdown, false, false, update.Message.MessageId);
                 return;
             }
 
@@ -234,7 +234,7 @@ namespace DwellerBot.Commands
                 Math.Round(resultingQuantity, 4),
                 currenciesList.Last().ToUpper()));
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), false, false, update.Message.MessageId, null, ParseMode.Markdown);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         public async Task<List<Currency>> GetCurrencyList()

@@ -30,7 +30,7 @@ namespace DwellerBot.Commands
 
             _dwellerBot.IsOnline = false;
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Shutting down.", false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Shutting down.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
             await Bot.GetUpdatesAsync(update.Id + 1);
         }
     }
