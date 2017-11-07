@@ -73,39 +73,34 @@ namespace DwellerBot.Services
                 catch (Exception ex)
                 {
                     Log.Logger.Error("An error has occured during message parsing. Error message: {0}", ex.Message);
-                    //ErrorCount++;
                 }
                 if (RegisteredCommands.ContainsKey(parsedMessage["command"]))
                 {
                     try
                     {
                         await RegisteredCommands[parsedMessage["command"]].ExecuteAsync(update, parsedMessage);
-                        //CommandsProcessed++;
                     }
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["command"], ex.Message);
-                        //ErrorCount++;
                     }
                 }
-                else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"]))// Check if the command mas typed in a russian layout
+                else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"])) // Check if the command mas typed in a russian layout
                 {
                     try
                     {
                         await RegisteredCommands[parsedMessage["interpretedCommand"]].ExecuteAsync(update, parsedMessage);
-                        //CommandsProcessed++;
                     }
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["interpretedCommand"], ex.Message);
-                        //ErrorCount++;
                     }
                 }
             }
         }
 
         private readonly Regex _fullCommandRegex = new Regex(@"(?<=^/\w+)@\w+"); // Returns bot name from command (/com@botname => @botname)
-        private readonly Regex _commandRegex = new Regex(@"^/\w+"); // Returns command (/com => /com)
+        private readonly Regex _commandRegex = new Regex(@"^/\w+");              // Returns command (/com => /com)
 
         internal Dictionary<string, string> ParseCommand(string input)
         {
@@ -113,24 +108,21 @@ namespace DwellerBot.Services
 
             if (_commandRegex.IsMatch(input))
             {
-                var fullCommandRegexIsMatch = _fullCommandRegex.IsMatch(input);
-                Match fullCommandRegexMatch = null;
-                if (!fullCommandRegexIsMatch || (fullCommandRegexMatch = _fullCommandRegex.Match(input)).Value == _botName)
+                var botNameMatch = _fullCommandRegex.Match(input);
+
+                // Support for the multibot chatrooms: the commands like "/command@OtherBot" will be ignored
+                // However, regular "/command" commands will always be processed
+                if (botNameMatch.Value == string.Empty || botNameMatch.Value == _botName)
                 {
                     var commmandMatch = _commandRegex.Match(input);
                     result.Add("command", commmandMatch.Value);
-                    if (!fullCommandRegexIsMatch)
-                    {
-                        var startIndex = commmandMatch.Index + commmandMatch.Length + 1;
-                        if (input.Length > startIndex)
-                            result.Add("message", input.Substring(startIndex));
-                    }
-                    else
-                    {
-                        var startIndex = fullCommandRegexMatch.Index + fullCommandRegexMatch.Length + 1;
-                        if (input.Length > startIndex)
-                            result.Add("message", input.Substring(startIndex));
-                    }
+
+                    var startIndex = botNameMatch.Value == string.Empty ?
+                        commmandMatch.Index + commmandMatch.Length + 1 :
+                        botNameMatch.Index + botNameMatch.Length + 1;
+
+                    if (input.Length > startIndex)
+                        result.Add("message", input.Substring(startIndex));
                 }
             }
 
@@ -149,12 +141,10 @@ namespace DwellerBot.Services
             var b = engCharSet.Length;
 
             inputCommand = inputCommand.ToLower();
-            //List<char> outputSymbols = new List<char>();
             string result = "/";
 
             for (var i = 1; i < inputCommand.Length; i++)
             {
-                //outputSymbols.Add(rusCharSet[rusCharSet.IndexOf(inputCommand[i])]);
                 var ind = rusCharSet.IndexOf(inputCommand[i]);
                 if (ind < 0)
                     return "";
