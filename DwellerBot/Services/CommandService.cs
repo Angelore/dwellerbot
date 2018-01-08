@@ -9,7 +9,7 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Services
 {
-    class CommandService
+    public class CommandService
     {
         private readonly string _botName;
 
@@ -85,8 +85,12 @@ namespace DwellerBot.Services
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["command"], ex.Message);
                     }
                 }
-                else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"])) // Check if the command mas typed in a russian layout
+                else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"])) // Check if the command was typed in a russian layout
                 {
+                    if (parsedMessage.ContainsKey("message"))
+                    {
+                        parsedMessage["message"] = InterpretCommand(parsedMessage["message"], false);
+                    }
                     try
                     {
                         await RegisteredCommands[parsedMessage["interpretedCommand"]].ExecuteAsync(update, parsedMessage);
@@ -132,7 +136,8 @@ namespace DwellerBot.Services
             return result;
         }
 
-        public static string InterpretCommand(string inputCommand)
+        // Since the foward slash is a service symbol for the bot, it should be ignored while parsing the command
+        public static string InterpretCommand(string inputCommand, bool ignoreForwardSlash = true)
         {
             var rusCharSet = @"абвгдеёжзийклмнопрстуфхцчшщъьыэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЫЭЮЯ\""№;:?/.,";
             var engCharSet = @"f,dult`;pbqrkvyjghcnea[wxio]ms'.zF<DULT~:PBQRKVYJGHCNEA{WXIO}MS'>Z\@#$^&|/?";
@@ -141,13 +146,17 @@ namespace DwellerBot.Services
             var b = engCharSet.Length;
 
             inputCommand = inputCommand.ToLower();
-            string result = "/";
+            string result = "";
 
-            for (var i = 1; i < inputCommand.Length; i++)
+            for (var i = 0; i < inputCommand.Length; i++)
             {
                 var ind = rusCharSet.IndexOf(inputCommand[i]);
-                if (ind < 0)
-                    return "";
+
+                if (ind < 0 || (ignoreForwardSlash && inputCommand[i] == '/'))
+                {
+                    result += inputCommand[i];
+                    continue;
+                }
 
                 result += engCharSet[ind];
             }
