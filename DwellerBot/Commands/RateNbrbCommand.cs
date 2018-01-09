@@ -11,7 +11,6 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Serilog;
 using Telegram.Bot.Types.Enums;
-using Newtonsoft.Json.Linq;
 
 namespace DwellerBot.Commands
 {
