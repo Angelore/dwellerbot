@@ -14,6 +14,7 @@ namespace DwellerBot.Commands
 {
     class ReactionCommand : CommandBase, ISaveable
     {
+        private readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
         private readonly List<FileInfo> _files;
         private readonly Random _rng;
         private readonly string _cacheFilePath;
@@ -30,7 +31,7 @@ namespace DwellerBot.Commands
                 var dir = new DirectoryInfo(folderName);
                 if (dir.Exists)
                 {
-                    _files.AddRange(dir.EnumerateFiles().ToList());
+                    _files.AddRange(dir.EnumerateFiles().Where(f => AllowedExtensions.Contains(f.Extension)));
                 }
             }
             _cacheFilePath = cacheFilePath;
@@ -47,7 +48,7 @@ namespace DwellerBot.Commands
             if (_files.Count == 0)
             {
                 await
-                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, update.Message.MessageId);
                 return;
             }
 
@@ -55,38 +56,14 @@ namespace DwellerBot.Commands
             {
                 if (parsedMessage["message"] == "ignorelast")
                 {
-                    if(DwellerBot.IsUserOwner(update.Message.From))
-                    {
-                        if (!string.IsNullOrEmpty(_lastUsedFile))
-                        {
-                            if (!_sentFiles.ContainsKey(_lastUsedFile))
-                                Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
-                            else
-                                _sentFiles.Remove(_lastUsedFile);
-
-                            if (_ignoredFiles.Contains(_lastUsedFile))
-                                Log.Logger.Debug("Last file was already in the _ignoredFiles.");
-                            else
-                                _ignoredFiles.Add(_lastUsedFile);
-
-                            _lastUsedFile = null;
-                            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
-                        return;
-                    }
-                    return;
+                    await IgnoreLastSubCommand(update);
                 }
                 // add more handles here if needed
                 else
                 {
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
-                    return;
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, update.Message.MessageId);
                 }
+                return;
             }
 
             int ind;
@@ -94,7 +71,7 @@ namespace DwellerBot.Commands
             {
                 ind = _rng.Next(0, _files.Count);
             }
-            while (_ignoredFiles.Contains(_files[ind].FullName) || _files[ind].Name == "Thumbs.db");
+            while (_ignoredFiles.Contains(_files[ind].FullName));
 
             var previousUsedFile = _lastUsedFile;
             _lastUsedFile = _files[ind].FullName;
@@ -135,6 +112,34 @@ namespace DwellerBot.Commands
             }
         }
 
+        async Task IgnoreLastSubCommand(Update update)
+        {
+            if (DwellerBot.IsUserOwner(update.Message.From))
+            {
+                if (!string.IsNullOrEmpty(_lastUsedFile))
+                {
+                    if (!_sentFiles.ContainsKey(_lastUsedFile))
+                        Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
+                    else
+                        _sentFiles.Remove(_lastUsedFile);
+
+                    if (_ignoredFiles.Contains(_lastUsedFile))
+                        Log.Logger.Debug("Last file was already in the _ignoredFiles.");
+                    else
+                        _ignoredFiles.Add(_lastUsedFile);
+
+                    _lastUsedFile = null;
+                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                    return;
+                }
+            }
+            else
+            {
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", ParseMode.Markdown, false, false, update.Message.MessageId);
+            }
+        }
+
+        #region ISaveable
         public void SaveState()
         {
             if (_sentFiles.Count == 0)
@@ -179,6 +184,7 @@ namespace DwellerBot.Commands
             }
         }
     }
+    #endregion
 
     class ReactionImageCache
     {
