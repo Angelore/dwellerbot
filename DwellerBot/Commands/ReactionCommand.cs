@@ -8,6 +8,7 @@ using Telegram.Bot.Types;
 using Newtonsoft.Json;
 using Serilog;
 using Telegram.Bot.Types.Enums;
+using System.Text;
 
 namespace DwellerBot.Commands
 {
@@ -17,6 +18,7 @@ namespace DwellerBot.Commands
         private readonly List<FileInfo> _files;
         private readonly Random _rng;
         private readonly string _cacheFilePath;
+        private readonly List<String> _folderNames;
         private Dictionary<string, string> _sentFiles;
         private List<string> _ignoredFiles;
         private string _lastUsedFile;
@@ -24,6 +26,7 @@ namespace DwellerBot.Commands
         public ReactionCommand(TelegramBotClient bot, List<string> folderNames, string cacheFilePath):base(bot)
         {
             _rng = new Random();
+            _folderNames = folderNames;
             _files = new List<FileInfo>();
             foreach (var folderName in folderNames)
             {
@@ -53,59 +56,72 @@ namespace DwellerBot.Commands
 
             if (parsedMessage.ContainsKey("message") && !string.IsNullOrEmpty(parsedMessage["message"]))
             {
-                if (parsedMessage["message"] == "ignorelast")
+                var message = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
+
+                if (message[0] == "ignorelast")
                 {
                     await IgnoreLastSubCommand(update);
+                }
+                else if (message[0] == "set")
+                {
+                    var folderName = message.Count >= 2 ? message[1] : "";
+                    await SelectReactionFromSetSubCommand(update, folderName);
                 }
                 // add more handles here if needed
                 else
                 {
                     await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, update.Message.MessageId);
                 }
-                return;
             }
+            else
+            {
+                await DefaultReactionSubCommand(update, _files);
+            }
+        }
 
+        async Task DefaultReactionSubCommand(Update update, List<FileInfo> files)
+        {
             int ind;
             do
             {
-                ind = _rng.Next(0, _files.Count);
+                ind = _rng.Next(0, files.Count);
             }
-            while (_ignoredFiles.Contains(_files[ind].FullName));
+            while (_ignoredFiles.Contains(files[ind].FullName));
 
             var previousUsedFile = _lastUsedFile;
-            _lastUsedFile = _files[ind].FullName;
-            if (_sentFiles.ContainsKey(_files[ind].FullName))
+            _lastUsedFile = files[ind].FullName;
+            if (_sentFiles.ContainsKey(files[ind].FullName))
             {
                 try
                 {
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
                     // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_sentFiles[_files[ind].FullName]), "", false, update.Message.MessageId);
+                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_sentFiles[files[ind].FullName]), "", false, update.Message.MessageId);
                     return;
                 }
                 catch (Exception ex)
                 {
                     Log.Logger.Error("An error has occured during file resending! Error message: {0}", ex.Message);
                     // remove the erroneous entry and try again
-                    _sentFiles.Remove(_files[ind].FullName);
+                    _sentFiles.Remove(files[ind].FullName);
                 }
             }
 
-            using (var fs = new FileStream(_files[ind].FullName, FileMode.Open, FileAccess.Read))
+            using (var fs = new FileStream(files[ind].FullName, FileMode.Open, FileAccess.Read))
             {
                 try
                 {
                     await Bot.SendChatActionAsync(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_files[ind].Name, fs), "", false, update.Message.MessageId);
-                    lock (_files)
+                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(files[ind].Name, fs), "", false, update.Message.MessageId);
+                    lock (_sentFiles)
                     {
-                        _sentFiles.Add(_files[ind].FullName, message.Photo.Last().FileId);
+                        _sentFiles.Add(files[ind].FullName, message.Photo.Last().FileId);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Logger.Error(ex, "An error has occured during file sending! Error message: {0} File name: {1}", ex.Message, _files[ind].FullName);
+                    Log.Logger.Error(ex, "An error has occured during file sending! Error message: {0} File name: {1}", ex.Message, files[ind].FullName);
                     _lastUsedFile = previousUsedFile;
                 }
             }
@@ -135,6 +151,29 @@ namespace DwellerBot.Commands
             else
             {
                 await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", ParseMode.Markdown, false, false, update.Message.MessageId);
+            }
+        }
+
+        async Task SelectReactionFromSetSubCommand(Update update, string folderName)
+        {
+            if (string.IsNullOrEmpty(folderName))
+            {
+                var sb = new StringBuilder();
+                // TODO: Prettify this, maybe display folder structure?
+                sb.AppendLine("Current folder list is:");
+                foreach (var f in _folderNames)
+                {
+                    var dir = new DirectoryInfo(f);
+                    if (dir.Exists)
+                    {
+                        sb.AppendLine($"`{dir.Name}`");
+                    }
+                }
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
+            }
+            else
+            {
+                await DefaultReactionSubCommand(update, _files.Where(f => f.Directory.Name == folderName).ToList());
             }
         }
 
