@@ -15,15 +15,16 @@ namespace DwellerBot.Commands
     class ReactionCommand : CommandBase, ISaveable
     {
         private readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
-        private readonly List<FileInfo> _files;
         private readonly Random _rng;
         private readonly string _cacheFilePath;
         private readonly List<String> _folderNames;
+
+        private List<FileInfo> _files;
         private Dictionary<string, string> _sentFiles;
         private List<string> _ignoredFiles;
         private string _lastUsedFile;
 
-        public ReactionCommand(TelegramBotClient bot, List<string> folderNames, string cacheFilePath):base(bot)
+        public ReactionCommand(TelegramBotClient bot, List<string> folderNames, string cacheFilePath) : base(bot)
         {
             _rng = new Random();
             _folderNames = folderNames;
@@ -37,7 +38,7 @@ namespace DwellerBot.Commands
                 }
             }
             _cacheFilePath = cacheFilePath;
-            
+
             // Since Telegram allows you to "send" files by using their id (if they are on the server already),
             // I use this to create a simple cache by sending id of a file if it was already sent once.
             _sentFiles = new Dictionary<string, string>();
@@ -81,12 +82,14 @@ namespace DwellerBot.Commands
 
         async Task DefaultReactionSubCommand(Update update, List<FileInfo> files)
         {
-            int ind;
-            do
+            if (files.Count == 0)
             {
-                ind = _rng.Next(0, files.Count);
+                Log.Logger.Warning("The reaction command was called on a folder which contains 0 valid files.");
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                return;
             }
-            while (_ignoredFiles.Contains(files[ind].FullName));
+
+            int ind = _rng.Next(0, files.Count);
 
             var previousUsedFile = _lastUsedFile;
             _lastUsedFile = files[ind].FullName;
@@ -133,15 +136,23 @@ namespace DwellerBot.Commands
             {
                 if (!string.IsNullOrEmpty(_lastUsedFile))
                 {
-                    if (!_sentFiles.ContainsKey(_lastUsedFile))
-                        Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
-                    else
+                    if (_sentFiles.ContainsKey(_lastUsedFile))
                         _sentFiles.Remove(_lastUsedFile);
-
-                    if (_ignoredFiles.Contains(_lastUsedFile))
-                        Log.Logger.Debug("Last file was already in the _ignoredFiles.");
                     else
+                        Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
+
+                    if (!_ignoredFiles.Contains(_lastUsedFile))
                         _ignoredFiles.Add(_lastUsedFile);
+                    else
+                        Log.Logger.Debug("Last file was already in the _ignoredFiles.");
+
+                    if (_files.Any(f => f.FullName == _lastUsedFile))
+                    {
+                        var file = _files.First(f => f.FullName == _lastUsedFile);
+                        _files.Remove(file);
+                    }
+                    else
+                        Log.Logger.Debug("Last file was not present in _files.");
 
                     _lastUsedFile = null;
                     await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", ParseMode.Markdown, false, false, update.Message.MessageId);
@@ -189,7 +200,7 @@ namespace DwellerBot.Commands
                 var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
                 sw.WriteLine(contents);
             }
-            
+
             Log.Logger.Debug("ReactionCommand state was successfully saved.");
         }
 
@@ -220,6 +231,9 @@ namespace DwellerBot.Commands
                     Log.Logger.Warning("The file {0} was expected to be populated with data, but was empty.", _cacheFilePath);
                 }
             }
+
+            // Remove ignored files from the initialised files list
+            _files = _files.Where(f => !_ignoredFiles.Contains(f.FullName)).ToList();
         }
     }
     #endregion
