@@ -142,8 +142,7 @@ namespace DwellerBot.Services
 
             var a = rusCharSet.Length;
             var b = engCharSet.Length;
-
-            inputCommand = inputCommand.ToLower();
+            
             string result = "";
 
             for (var i = 0; i < inputCommand.Length; i++)
