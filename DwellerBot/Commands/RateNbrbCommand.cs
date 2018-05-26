@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using DwellerBot.Models;
+
+using Microsoft.Recognizers.Text;
+using Microsoft.Recognizers.Text.Number;
+
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -61,8 +66,9 @@ namespace DwellerBot.Commands
                         return;
                     }
 
-                    int quantity;
-                    bool parseResult = int.TryParse(message[0], out quantity);
+                    decimal quantity;
+                    var parseResult = TryGetNumber(message[0], out quantity);
+
                     if (!parseResult)
                     {
                         await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Неверно введено количество валюты.", ParseMode.Markdown, false, false, update.Message.MessageId);
@@ -84,6 +90,30 @@ namespace DwellerBot.Commands
                 currenciesList = _defaultCurrenciesList;
                 await RegularRatesCommand(update, currenciesList);
             }
+        }
+
+        private bool TryGetNumber(string text, out decimal result)
+        {
+            // Get Number for the specified culture
+            var results = NumberRecognizer.RecognizeNumber(text, Culture.English);
+            if (results.Count > 0)
+            {
+                if (results.First().TypeName == "number" &&
+                    decimal.TryParse(results.First().Resolution["value"].ToString(), out result))
+                {
+                    // Validate number
+                    if (result < 0)
+                    {
+                        result = 0;
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+
+            result = 0;
+            return false;
         }
 
         private async Task RegularRatesCommand(Update update, List<string> currenciesList)
@@ -161,7 +191,7 @@ namespace DwellerBot.Commands
             await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
-        private async Task ConverterRatesCommand(Update update, List<string> currenciesList, int quantity)
+        private async Task ConverterRatesCommand(Update update, List<string> currenciesList, decimal quantity)
         {
             DateTime date = DateTime.Today;
             // TODO: fix this shit (lists)
