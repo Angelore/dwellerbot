@@ -95,11 +95,13 @@ namespace DwellerBot.Commands
         private bool TryGetNumber(string text, out decimal result)
         {
             // Get Number for the specified culture
+            var style = NumberStyles.Number | NumberStyles.AllowCurrencySymbol;
+            var culture = CultureInfo.CreateSpecificCulture(Culture.English);
             var results = NumberRecognizer.RecognizeNumber(text, Culture.English);
             if (results.Count > 0)
             {
                 if (results.First().TypeName == "number" &&
-                    decimal.TryParse(results.First().Resolution["value"].ToString(), out result))
+                    decimal.TryParse(results.First().Resolution["value"].ToString(), style, culture, out result))
                 {
                     // Validate number
                     if (result < 0)

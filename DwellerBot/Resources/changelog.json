@@ -23,5 +23,10 @@
     "versionNumber": "0.2.3",
     "releaseDate": "11.01.2018",
     "description": "- `[New]` Added the ability to interpret command body as well as the command name\n- `[New]` Added the reaction 'set' subcommand, which allows to request an image from a specific folder\n- `[Fix]` Added filtering pictures by ext-n at launch, so there should be no more issues with accidental .webm files in the folder"
+  },
+  {
+    "versionNumber": "0.2.4",
+    "releaseDate": "26.05.2018",
+    "description": "- `[New]` Added the ability to use decimals in the rate command (thanks @forcewake)"
   }
 ]
