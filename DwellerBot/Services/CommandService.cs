@@ -55,7 +55,7 @@ namespace DwellerBot.Services
             }
         }
 
-        public async Task HandleUpdate(Update update)
+        public async Task<bool> HandleUpdate(Update update)
         {
             if (update.Message != null && update.Message.Text != null)
             {
@@ -71,6 +71,7 @@ namespace DwellerBot.Services
                 catch (Exception ex)
                 {
                     Log.Logger.Error("An error has occured during message parsing. Error message: {0}", ex.Message);
+                    return false;
                 }
                 if (RegisteredCommands.ContainsKey(parsedMessage["command"]))
                 {
@@ -81,6 +82,7 @@ namespace DwellerBot.Services
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["command"], ex.Message);
+                        return false;
                     }
                 }
                 else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"])) // Check if the command was typed in a russian layout
@@ -96,9 +98,12 @@ namespace DwellerBot.Services
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["interpretedCommand"], ex.Message);
+                        return false;
                     }
                 }
             }
+
+            return true;
         }
 
         private readonly Regex _fullCommandRegex = new Regex(@"(?<=^/\w+)@\w+"); // Returns bot name from command (/com@botname => @botname)

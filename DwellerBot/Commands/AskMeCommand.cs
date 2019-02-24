@@ -12,7 +12,6 @@ namespace DwellerBot.Commands
     class AskMeCommand : CommandBase
     {
         private readonly Random _rng;
-        // private readonly string[] _responses = { "Да", "Нет", "Возможно", "Маловероятно", "Конечно", "Спросите позже", "Спроси у Пашана" };
         private readonly List<string> _responses;
         private readonly List<int> _weights;
         private readonly int _maxRadnomValue;

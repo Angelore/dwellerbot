@@ -18,7 +18,7 @@ namespace DwellerBot
 
         private readonly TelegramBotClient _bot;
 
-        private Random _rng;
+        private readonly Random _rng;
 
         internal int Offset;
         internal DateTime LaunchTime;
@@ -91,18 +91,18 @@ namespace DwellerBot
                     ErrorCount++;
                 }
 
-                List<Task> tasks = new List<Task>();
-                foreach (var update in updates)
-                {
-                    //var updateTask = Task.Factory.StartNew(() => CommandService.HandleUpdate(update));
-                    var updateTask = CommandService.HandleUpdate(update);
-                    tasks.Add(updateTask);
-
-                    Offset = update.Id + 1;
-                }
+                List<Task<bool>> tasks = new List<Task<bool>>();
                 try
                 {
+                    foreach (var update in updates)
+                    {
+                        var updateTask = CommandService.HandleUpdate(update);
+                        tasks.Add(updateTask);
+
+                        Offset = update.Id + 1;
+                    }
                     Task.WaitAll(tasks.ToArray());
+                    CommandsProcessed += tasks.Count(t => t.Result);
                 }
                 catch (Exception ex)
                 {

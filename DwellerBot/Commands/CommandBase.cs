@@ -6,7 +6,7 @@ using Telegram.Bot.Types;
 
 namespace DwellerBot.Commands
 {
-    class CommandBase : ICommand
+    abstract class CommandBase : ICommand
     {
         protected TelegramBotClient  Bot { get; private set; }
 
