@@ -16,6 +16,8 @@ namespace DwellerBot.Commands
     class ReactionCommand : CommandBase, ISaveable
     {
         private readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
+        private readonly string UploadsDirectory = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
+
         private readonly Random _rng;
         private readonly string _cacheFilePath;
         private readonly List<String> _folderNames;
@@ -23,6 +25,7 @@ namespace DwellerBot.Commands
         private List<FileInfo> _files;
         private Dictionary<string, string> _sentFiles;
         private List<string> _ignoredFiles;
+        private List<string> _uploadedFiles;
         private string _lastUsedFile;
 
         public ReactionCommand(TelegramBotClient bot, List<string> folderNames, string cacheFilePath) : base(bot)
@@ -44,6 +47,7 @@ namespace DwellerBot.Commands
             // I use this to create a simple cache by sending an id of a file if it was already sent once.
             _sentFiles = new Dictionary<string, string>();
             _ignoredFiles = new List<string>();
+            _uploadedFiles = new List<string>();
             _lastUsedFile = null;
         }
 
@@ -60,19 +64,30 @@ namespace DwellerBot.Commands
             {
                 var message = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
 
-                if (message[0] == "ignorelast")
+                switch (message[0])
                 {
-                    await IgnoreLastSubCommand(update);
-                }
-                else if (message[0] == "set")
-                {
-                    var folderName = message.Count >= 2 ? message[1] : "";
-                    await SelectReactionFromSetSubCommand(update, folderName);
-                }
-                // add more handles here if needed
-                else
-                {
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, update.Message.MessageId);
+                    case "ignorelast":
+                        await IgnoreLastSubCommand(update);
+                        break;
+                    case "set":
+                        var folderName = message.Count >= 2 ? message[1] : "";
+                        await SelectReactionFromSetSubCommand(update, folderName);
+                        break;
+                    case "add":
+                        await AddImageSubCommand(update);
+                        break;
+                    case "help":
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id,
+                            "Reaction command without arguments returns a random image." + Environment.NewLine +
+                            "Parmeters:" + Environment.NewLine +
+                            "`ignorelast` - adds the latest image to the blacklist" + Environment.NewLine +
+                            "`set` - returns a list of currently loaded sets (folders). `set setname` returns an image from the set" + Environment.NewLine +
+                            "`add' - adds an image to the list. The command needs to be a caption on an uncompressed image",
+                            ParseMode.Markdown, false, false, update.Message.MessageId);
+                        break;
+                    default:
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, update.Message.MessageId);
+                        break;
                 }
             }
             else
@@ -142,6 +157,8 @@ namespace DwellerBot.Commands
                     else
                         Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
 
+                    // TODO: Remove last used from uploaded files
+
                     if (!_ignoredFiles.Contains(_lastUsedFile))
                         _ignoredFiles.Add(_lastUsedFile);
                     else
@@ -181,12 +198,31 @@ namespace DwellerBot.Commands
                         sb.AppendLine($"`{dir.Name}`");
                     }
                 }
+                sb.AppendLine($"`{new DirectoryInfo(UploadsDirectory).Name}`");
                 await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
             }
             else
             {
                 await DefaultReactionSubCommand(update, _files.Where(f => f.Directory.Name == folderName).ToList());
             }
+        }
+
+        async Task AddImageSubCommand(Update update)
+        {
+            if (update.Message.Photo != null && update.Message.Photo.Length > 0)
+            {
+                var biggestImage = update.Message.Photo.Last();
+                var fakeFileName = System.IO.Path.Combine(UploadsDirectory, biggestImage.FileId);
+                lock (_files)
+                {
+                    _files.Add(new FileInfo(fakeFileName));
+                    _sentFiles.Add(fakeFileName, biggestImage.FileId);
+                    _uploadedFiles.Add(biggestImage.FileId);
+                }
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "The image has been added to the list.", ParseMode.Markdown, false, false, update.Message.MessageId);
+            }
+            else
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "No images were found in the message.", ParseMode.Markdown, false, false, update.Message.MessageId);
         }
 
         #region ISaveable
@@ -197,7 +233,7 @@ namespace DwellerBot.Commands
 
             using (var sw = new StreamWriter(new FileStream(_cacheFilePath, FileMode.Create, FileAccess.Write)))
             {
-                var config = new ReactionImageCache() { ValidPaths = _sentFiles, IgnoredPaths = _ignoredFiles };
+                var config = new ReactionImageCache() { ValidPaths = _sentFiles, IgnoredPaths = _ignoredFiles, UploadedFiles = _uploadedFiles };
                 var contents = JsonConvert.SerializeObject(config, Formatting.Indented);
                 sw.WriteLine(contents);
             }
@@ -223,8 +259,9 @@ namespace DwellerBot.Commands
                     }
                     if (config != null)
                     {
-                        _sentFiles = config.ValidPaths;
-                        _ignoredFiles = config.IgnoredPaths;
+                        _sentFiles = config.ValidPaths ?? new Dictionary<string, string>();
+                        _ignoredFiles = config.IgnoredPaths ?? new List<string>();
+                        _uploadedFiles = config.UploadedFiles ?? new List<string>();
                     }
                 }
                 else
@@ -235,13 +272,25 @@ namespace DwellerBot.Commands
 
             // Remove ignored files from the initialised files list
             _files = _files.Where(f => !_ignoredFiles.Contains(f.FullName)).ToList();
+            // Add uploaded files as fake files
+            foreach(var uf in _uploadedFiles)
+            {
+                _files.Add(new FileInfo(System.IO.Path.Combine(UploadsDirectory, uf)));
+            }
         }
+        #endregion
+
+        //private void CreateUploadsDir()
+        //{
+        //    if (!Directory.Exists(UploadsDirectory))
+        //        Directory.CreateDirectory(UploadsDirectory);
+        //}
     }
-    #endregion
 
     class ReactionImageCache
     {
         public Dictionary<string, string> ValidPaths { get; set; }
         public List<string> IgnoredPaths { get; set; }
+        public List<string> UploadedFiles { get; set; }
     }
 }

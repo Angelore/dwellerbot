@@ -57,14 +57,14 @@ namespace DwellerBot.Services
 
         public async Task<bool> HandleUpdate(Update update)
         {
-            if (update.Message != null && update.Message.Text != null)
+            if (update.Message?.Text != null || update.Message?.Caption != null)
             {
                 Log.Logger.Debug("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text);
 
                 Dictionary<string, string> parsedMessage = new Dictionary<string, string>();
                 try
                 {
-                    parsedMessage = ParseCommand(update.Message.Text);
+                    parsedMessage = ParseCommand(update.Message.Text ?? update.Message.Caption);
                     parsedMessage.Add("interpretedCommand", InterpretCommand(parsedMessage["command"]));
 
                 }
