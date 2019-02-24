@@ -82,7 +82,7 @@ namespace DwellerBot.Commands
                             "Parmeters:" + Environment.NewLine +
                             "`ignorelast` - adds the latest image to the blacklist" + Environment.NewLine +
                             "`set` - returns a list of currently loaded sets (folders). `set setname` returns an image from the set" + Environment.NewLine +
-                            "`add' - adds an image to the list. The command needs to be a caption on an uncompressed image",
+                            "`add` - adds an image to the list. The command needs to be a caption on an uncompressed image",
                             ParseMode.Markdown, false, false, update.Message.MessageId);
                         break;
                     default:
