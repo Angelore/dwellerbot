@@ -41,7 +41,7 @@ namespace DwellerBot.Commands
             _cacheFilePath = cacheFilePath;
 
             // Since Telegram allows you to "send" files by using their id (if they are on the server already),
-            // I use this to create a simple cache by sending id of a file if it was already sent once.
+            // I use this to create a simple cache by sending an id of a file if it was already sent once.
             _sentFiles = new Dictionary<string, string>();
             _ignoredFiles = new List<string>();
             _lastUsedFile = null;
@@ -162,7 +162,7 @@ namespace DwellerBot.Commands
             }
             else
             {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only bot owner can use this command.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only the bot owner can use this command.", ParseMode.Markdown, false, false, update.Message.MessageId);
             }
         }
 

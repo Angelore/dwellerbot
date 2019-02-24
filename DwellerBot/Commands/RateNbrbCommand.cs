@@ -57,7 +57,11 @@ namespace DwellerBot.Commands
 
             if (parsedMessage.ContainsKey("message"))
             {
-                message = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
+                message = parsedMessage["message"].Split(' ')
+                    .Where(s => !string.IsNullOrEmpty(s))
+                    .Select(s => s.ToLower())
+                    .ToList();
+
                 if (message.Contains("to"))
                 {
                     if (message.Count != 4)
@@ -81,8 +85,7 @@ namespace DwellerBot.Commands
                 }
                 else
                 {
-                    currenciesList = message.Select(s => s.ToLower()).ToList();
-                    await RegularRatesCommand(update, currenciesList);
+                    await RegularRatesCommand(update, message);
                 }
             }
             else
@@ -136,7 +139,7 @@ namespace DwellerBot.Commands
                 return;
             }
 
-            // if the array is empty, try getting rates for today instead of tomorrow
+            // If the array is empty, try getting rates for today instead of tomorrow
             if (!rates.Any())
             {
                 try
@@ -150,12 +153,9 @@ namespace DwellerBot.Commands
             }
 
             // Get data for previous date for comparison
-            //if (_previousRates == null ||
-            //    !_previousRates.Any() ||
-            //    _previousRates.First().Date.AddDays(1) != rates.First().Date)
             {
                 var ondate = rates.First().Date.AddDays(-1);
-                // Rates do not update on weekend (at least here, duh)
+                // Rates do not update on weekend
                 if (ondate.DayOfWeek == DayOfWeek.Sunday)
                 {
                     ondate = ondate.AddDays(-2);

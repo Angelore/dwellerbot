@@ -12,7 +12,7 @@ namespace DwellerBot.Commands
 {
     class FeatureRequestCommand: CommandBase, ISaveable
     {
-        private string _featureRequestsFilePath;
+        private readonly string _featureRequestsFilePath;
         private Dictionary<int, string> _requests;
         private int _requestIndex;
 
