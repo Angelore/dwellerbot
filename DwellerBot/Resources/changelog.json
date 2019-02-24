@@ -28,5 +28,10 @@
     "versionNumber": "0.2.4",
     "releaseDate": "26.05.2018",
     "description": "- `[New]` Added the ability to use decimals in the rate command (thanks @forcewake)"
+  },
+  {
+    "versionNumber": "0.2.5",
+    "releaseDate": "24.02.2019",
+    "description": "- `[New]` Added 'add' reaction subcommand."
   }
 ]
