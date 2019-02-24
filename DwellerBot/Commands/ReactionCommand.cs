@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Serilog;
 using Telegram.Bot.Types.Enums;
 using System.Text;
+using Telegram.Bot.Types.InputFiles;
 
 namespace DwellerBot.Commands
 {
@@ -100,7 +101,7 @@ namespace DwellerBot.Commands
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
                     // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(_sentFiles[files[ind].FullName]), "", false, update.Message.MessageId);
+                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new InputOnlineFile(_sentFiles[files[ind].FullName]), null, ParseMode.Default, false, update.Message.MessageId);
                     return;
                 }
                 catch (Exception ex)
@@ -116,7 +117,7 @@ namespace DwellerBot.Commands
                 try
                 {
                     await Bot.SendChatActionAsync(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new FileToSend(files[ind].Name, fs), "", false, update.Message.MessageId);
+                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new InputOnlineFile(fs, files[ind].Name), null, ParseMode.Default, false, update.Message.MessageId);
                     lock (_sentFiles)
                     {
                         _sentFiles.Add(files[ind].FullName, message.Photo.Last().FileId);

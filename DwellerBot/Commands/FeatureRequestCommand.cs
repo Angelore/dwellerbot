@@ -43,7 +43,7 @@ namespace DwellerBot.Commands
                             result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
                         }
 
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, update.Message.MessageId);
                         return;
                     }
                 }
@@ -54,7 +54,7 @@ namespace DwellerBot.Commands
                     {
                         _requests[index] = "[Done] " + _requests[index];
                         var result = string.Format("{0}: {1}{2}", index, _requests[index], Environment.NewLine);
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, update.Message.MessageId);
                         return;
                     }
                 }

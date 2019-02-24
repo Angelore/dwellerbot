@@ -25,7 +25,7 @@ namespace DwellerBot
         internal int CommandsProcessed;
         internal int ErrorCount;
         internal bool IsOnline = true;
-        
+
         internal CommandService CommandService { get; }
 
         public DwellerBot(Settings settings)
@@ -45,7 +45,7 @@ namespace DwellerBot
             Offset = 0;
             CommandsProcessed = 0;
             ErrorCount = 0;
-            LaunchTime = DateTime.Now.AddHours(3);
+            LaunchTime = DateTime.Now;
 
             CommandService.RegisterCommands(new Dictionary<string, ICommand>
             {
@@ -71,12 +71,12 @@ namespace DwellerBot
 
             CommandService.LoadCommandStates();
         }
-        
+
         public async Task Run()
         {
             var me = await _bot.GetMeAsync();
-            
-            Log.Logger.Information("{0} is online and fully functional." + Environment.NewLine, me.Username);
+
+            Log.Logger.Information("{0} has started." + Environment.NewLine, me.Username);
 
             while (IsOnline)
             {
@@ -120,6 +120,6 @@ namespace DwellerBot
                 return true;
 
             return false;
-        }        
+        }
     }
 }
