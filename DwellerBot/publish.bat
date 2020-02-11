@@ -15,6 +15,7 @@ copy /Y Microsoft.Recognizers.Text.NumberWithUnit.dll %publishpath%
 copy /Y Newtonsoft.Json.dll %publishpath%
 copy /Y Serilog.dll %publishpath%
 copy /Y Serilog.FullNetFx.dll %publishpath%
+copy /Y Serilog.Sinks.Console.dll %publishpath%
 copy /Y Serilog.Sinks.ColoredConsole.dll %publishpath%
 copy /Y System.Collections.Immutable.dll %publishpath%
 copy /Y System.ValueTuple.dll %publishpath%
