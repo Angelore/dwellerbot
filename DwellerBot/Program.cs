@@ -14,7 +14,7 @@ namespace DwellerBot
             
             Log.Logger = new LoggerConfiguration()
                              .MinimumLevel.Debug()
-                             .WriteTo.ColoredConsole()
+                             .WriteTo.Console()
                              //.WriteTo.RollingFile(logFileTempalate)
                              .CreateLogger();
 
