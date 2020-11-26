@@ -7,6 +7,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Serilog;
 using DwellerBot.Services;
+using DwellerBot.Config;
 
 namespace DwellerBot
 {
@@ -28,11 +29,11 @@ namespace DwellerBot
 
         internal CommandService CommandService { get; }
 
-        public DwellerBot(Settings settings)
+        public DwellerBot(BotConfiguration settings)
         {
-            BotName = settings.keys.First(x => x.name == "botName").value;
-            OwnerUsername = settings.keys.First(x => x.name == "ownerName").value;
-            OwnerId = int.Parse(settings.keys.First(x => x.name == "ownerId").value);
+            BotName = settings.BotName;
+            OwnerUsername = settings.Owner.OwnerName;
+            OwnerId = settings.Owner.OwnerId;
 
             // move to container
             CommandService = new CommandService(BotName);
@@ -40,7 +41,7 @@ namespace DwellerBot
             _rng = new Random();
 
             // Get bot api token
-            _bot = new TelegramBotClient(settings.keys.First(x => x.name == "dwellerBotKey").value);
+            _bot = new TelegramBotClient(settings.BotKey);
 
             Offset = 0;
             CommandsProcessed = 0;
@@ -51,18 +52,18 @@ namespace DwellerBot
             {
                 {@"/debug", new DebugCommand(_bot, this)},
                 {@"/rate", new RateNbrbCommand(_bot)},
-                {@"/askme", new AskMeCommand(_bot, settings.paths.paths.First(x => x.name == "askMeResponsesPath").value)},
-                {@"/weather", new WeatherCommand(_bot, settings.keys.First(x => x.name == "openWeatherKey").value)},
+                {@"/askme", new AskMeCommand(_bot, settings.AskMeCommandConfig.ConfigPath) },
+                {@"/weather", new WeatherCommand(_bot, settings.ServiceConfig.OpenWeatherKey) },
                 {
                     @"/reaction",
                     new ReactionCommand(
                         _bot,
-                        settings.paths.pathGroups.First(x => x.name == "reactionImagePaths").paths.Select(x => x.value).ToList(),
-                        settings.paths.paths.First(x => x.name == "reactionImageCachePath").value
+                        settings.ReactionCommandConfig.FolderPaths.ToList(),
+                        settings.ReactionCommandConfig.ConfigPath
                         )
                 },
                 {@"/rtd", new RtdCommand(_bot)},
-                {@"/featurerequest", new FeatureRequestCommand(_bot, settings.paths.paths.First(x => x.name == "featureRequestsPath").value)},
+                {@"/featurerequest", new FeatureRequestCommand(_bot, settings.FeatureRequestConfig.ConfigPath) },
                 {@"/bash", new BashimCommand(_bot)},
                 {@"/savestate", new SaveStateCommand(_bot, this)},
                 {@"/shutdown", new ShutdownCommand(_bot, this)},
