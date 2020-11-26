@@ -29,9 +29,12 @@ namespace DwellerBot.Commands
         {
             var version = _versions.Last();
             var sb = new StringBuilder();
-            sb.AppendLine($"Ver. *{version.versionNumber}* :: {version.releaseDate}");
+            sb.AppendLine($"Ver. *{version.VersionNumber}* :: {version.ReleaseDate}");
+            if (version.Description?.Length > 0)
+                sb.AppendLine($"*{version.Description}*");
             sb.AppendLine();
-            sb.AppendLine(version.description);
+            foreach (var change in version.Changes)
+                sb.AppendLine(change);
 
             await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
         }

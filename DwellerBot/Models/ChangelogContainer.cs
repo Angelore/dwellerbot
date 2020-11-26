@@ -7,8 +7,9 @@
 
     public class AppVersion
     {
-        public string versionNumber { get; set; }
-        public string releaseDate { get; set; }
-        public string description { get; set; }
+        public string VersionNumber { get; set; }
+        public string ReleaseDate { get; set; }
+        public string Description { get; set; }
+        public string[] Changes { get; set; }
     }
 }
