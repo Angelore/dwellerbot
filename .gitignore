@@ -198,3 +198,8 @@ FakesAssemblies/
 
 # Project specific
 [Ss]ettings.xml
+
+# ignore appsettings configuration files
+**/appsettings.development.json
+**/appsettings.staging.json
+**/appsettings.production.json

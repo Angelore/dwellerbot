@@ -1,7 +1,9 @@
-﻿using System.IO;
-using System.Xml.Serialization;
-using System.Reflection;
+﻿using DwellerBot.Config;
+using Microsoft.Extensions.Configuration;
 using Serilog;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace DwellerBot
 {
@@ -9,8 +11,8 @@ namespace DwellerBot
     {
         static void Main(string[] args)
         {
-            var baseDirectory = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var logFileTempalate = System.IO.Path.Combine(baseDirectory, "Log-{{Date}}.txt");
+            var baseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var logFileTempalate = Path.Combine(baseDirectory, "Log-{{Date}}.txt");
             
             Log.Logger = new LoggerConfiguration()
                              .MinimumLevel.Debug()
@@ -18,15 +20,14 @@ namespace DwellerBot
                              //.WriteTo.RollingFile(logFileTempalate)
                              .CreateLogger();
 
-            var resourceName = @"Config\Settings.xml";
-            Settings settings;
-            
-            using (FileStream stream = new FileStream(resourceName, FileMode.Open, FileAccess.Read))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                var deserializer = new XmlSerializer(typeof(Settings));
-                settings = deserializer.Deserialize(reader) as Settings;
-            }
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Path.Combine(baseDirectory, "Config"))
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+            var settings = configuration.Get<BotConfiguration>();
 
             var dwellerBot = new DwellerBot(settings);
             dwellerBot.Run().Wait();
