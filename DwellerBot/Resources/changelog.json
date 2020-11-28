@@ -33,5 +33,14 @@
         "versionNumber": "0.2.5",
         "releaseDate": "24.02.2019",
         "changes": [ "- `[New]` Added 'add' reaction subcommand." ]
+    },
+    {
+        "versionNumber": "1.0.0",
+        "releaseDate": "",
+        "description": "Actual release 🎉",
+        "changes": [
+            "- Moved to netcore 5.0",
+            ""
+        ]
     }
 ]

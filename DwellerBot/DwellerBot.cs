@@ -5,28 +5,28 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
+using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 
 namespace DwellerBot
 {
     public class DwellerBot
     {
-        private static string BotName;
-        private static string OwnerUsername;
-        private static int OwnerId;
+        private static string BotName { get; set; }
+        private static string OwnerUsername { get; set; }
+        private static int OwnerId { get; set; }
 
         private readonly TelegramBotClient _bot;
 
-        private readonly Random _rng;
+        public DateTime LaunchTime { get; set; }
+        public int CommandsProcessed { get; set; }
+        public int ErrorCount { get; set; }
 
-        internal int Offset;
-        internal DateTime LaunchTime;
-        internal int CommandsProcessed;
-        internal int ErrorCount;
-        internal bool IsOnline = true;
-
+        internal CancellationTokenSource CancellationTokenSource { get; }
         internal CommandService CommandService { get; }
 
         public DwellerBot(BotConfiguration settings)
@@ -35,15 +35,10 @@ namespace DwellerBot
             OwnerUsername = settings.Owner.OwnerName;
             OwnerId = settings.Owner.OwnerId;
 
-            // move to container
             CommandService = new CommandService(BotName);
-
-            _rng = new Random();
-
-            // Get bot api token
+            CancellationTokenSource = new CancellationTokenSource();
             _bot = new TelegramBotClient(settings.BotKey);
 
-            Offset = 0;
             CommandsProcessed = 0;
             ErrorCount = 0;
             LaunchTime = DateTime.Now;
@@ -76,43 +71,53 @@ namespace DwellerBot
         public async Task Run()
         {
             var me = await _bot.GetMeAsync();
+            var cts = new CancellationTokenSource();
 
             Log.Logger.Information("{0} has started." + Environment.NewLine, me.Username);
 
-            while (IsOnline)
+            _bot.StartReceiving(
+                new DefaultUpdateHandler(HandleUpdateAsync, HandleErrorAsync),
+                CancellationTokenSource.Token
+            );
+
+            try
             {
-                Update[] updates = new Update[0];
-                try
-                {
-                    updates = await _bot.GetUpdatesAsync(Offset);
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error("An error has occured while receiving updates. Error message: {0}", ex.Message);
-                    ErrorCount++;
-                }
-
-                List<Task<bool>> tasks = new List<Task<bool>>();
-                try
-                {
-                    foreach (var update in updates)
-                    {
-                        var updateTask = CommandService.HandleUpdate(update);
-                        tasks.Add(updateTask);
-
-                        Offset = update.Id + 1;
-                    }
-                    Task.WaitAll(tasks.ToArray());
-                    CommandsProcessed += tasks.Count(t => t.Result);
-                }
-                catch (Exception ex)
-                {
-                    // for debug
-                    throw;
-                }
-
-                await Task.Delay(1000);
+                await Task.Delay(-1, CancellationTokenSource.Token);
             }
+            catch (OperationCanceledException)
+            {
+                Log.Logger.Information("Shutting down after token cancellation.");
+            }
+            finally
+            {
+                CancellationTokenSource.Dispose();
+            }
+        }
+
+        public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            var handler = CommandService.HandleUpdate(update);
+
+            try
+            {
+                await handler;
+            }
+            catch (Exception exception)
+            {
+                await HandleErrorAsync(botClient, exception, cancellationToken);
+            }
+        }
+
+        public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
+        {
+            var errorMessage = exception switch
+            {
+                ApiRequestException apiRequestException => $"Telegram API Error:\n[{apiRequestException.ErrorCode}]\n{apiRequestException.Message}",
+                _ => exception.ToString()
+            };
+
+            Log.Logger.Error("An error has occured while receiving updates. Error message: {0}", errorMessage);
+            ErrorCount++;
         }
 
         public static bool IsUserOwner(User user)

@@ -25,10 +25,9 @@ namespace DwellerBot.Commands
 		        await command.ExecuteAsync(update, parsedMessage);
             }
 
-            _dwellerBot.IsOnline = false;
-
             await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Shutting down.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
-            await Bot.GetUpdatesAsync(update.Id + 1);
+
+            _dwellerBot.CancellationTokenSource.CancelAfter(100);
         }
     }
 }
