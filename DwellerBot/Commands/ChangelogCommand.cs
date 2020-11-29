@@ -16,7 +16,7 @@ namespace DwellerBot.Commands
 
         public ChangelogCommand(TelegramBotClient bot) : base(bot)
         {
-            var resourceName = @"Resources\changelog.json";
+            var resourceName = @"Resources/changelog.json";
 
             using (FileStream stream = new FileStream(resourceName, FileMode.Open, FileAccess.Read))
             using (StreamReader reader = new StreamReader(stream))
