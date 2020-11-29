@@ -22,7 +22,7 @@ namespace DwellerBot.Commands
             _responses = new List<string>();
             _weights = new List<int>();
 
-            using (var sr = new StreamReader(new FileStream(responsesFilePath, FileMode.Open)))
+            using (var sr = new StreamReader(new FileStream(Path.GetFullPath(responsesFilePath), FileMode.Open)))
             {
                 var str = sr.ReadToEnd();
                 if (str.Length > 0)
