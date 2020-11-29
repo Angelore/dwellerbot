@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Newtonsoft.Json;
-using Serilog;
 using Telegram.Bot.Types.Enums;
-using System.Text;
 using Telegram.Bot.Types.InputFiles;
 
 namespace DwellerBot.Commands
@@ -16,7 +16,7 @@ namespace DwellerBot.Commands
     class ReactionCommand : CommandBase, ISaveable
     {
         private readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png" };
-        private readonly string UploadsDirectory = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads");
+        private readonly string UploadsDirectory = "uploads";
 
         private readonly Random _rng;
         private readonly string _cacheFilePath;
@@ -109,21 +109,22 @@ namespace DwellerBot.Commands
 
             var previousUsedFile = _lastUsedFile;
             _lastUsedFile = files[ind].FullName;
-            if (_sentFiles.ContainsKey(files[ind].FullName))
+            var relativePath = GetRelativePath(files[ind].FullName);
+            if (_sentFiles.ContainsKey(relativePath))
             {
                 try
                 {
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
                     // await Bot.SendChatAction(message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhotoAsync(message.Chat.Id, new InputOnlineFile(_sentFiles[files[ind].FullName]), null, ParseMode.Default, false, message.MessageId);
+                    await Bot.SendPhotoAsync(message.Chat.Id, new InputOnlineFile(_sentFiles[relativePath]), null, ParseMode.Default, false, message.MessageId);
                     return;
                 }
                 catch (Exception ex)
                 {
                     Log.Logger.Error("An error has occured during file resending! Error message: {0}", ex.Message);
                     // remove the erroneous entry and try again
-                    _sentFiles.Remove(files[ind].FullName);
+                    _sentFiles.Remove(relativePath);
                 }
             }
 
@@ -135,7 +136,7 @@ namespace DwellerBot.Commands
                     var responseMessage = await Bot.SendPhotoAsync(message.Chat.Id, new InputOnlineFile(fs, files[ind].Name), null, ParseMode.Default, false, message.MessageId);
                     lock (_sentFiles)
                     {
-                        _sentFiles.Add(files[ind].FullName, responseMessage.Photo.Last().FileId);
+                        _sentFiles.Add(relativePath, responseMessage.Photo.Last().FileId);
                     }
                 }
                 catch (Exception ex)
@@ -152,15 +153,16 @@ namespace DwellerBot.Commands
             {
                 if (!string.IsNullOrEmpty(_lastUsedFile))
                 {
-                    if (_sentFiles.ContainsKey(_lastUsedFile))
-                        _sentFiles.Remove(_lastUsedFile);
+                    var relativePath = GetRelativePath(_lastUsedFile);
+                    if (_sentFiles.ContainsKey(relativePath))
+                        _sentFiles.Remove(relativePath);
                     else
                         Log.Logger.Debug("_lastUsedFile is not null, but is absent from _sentFiles!");
 
                     // TODO: Remove last used from uploaded files
 
-                    if (!_ignoredFiles.Contains(_lastUsedFile))
-                        _ignoredFiles.Add(_lastUsedFile);
+                    if (!_ignoredFiles.Contains(relativePath))
+                        _ignoredFiles.Add(relativePath);
                     else
                         Log.Logger.Debug("Last file was already in the _ignoredFiles.");
 
@@ -198,7 +200,7 @@ namespace DwellerBot.Commands
                         sb.AppendLine($"`{dir.Name}`");
                     }
                 }
-                sb.AppendLine($"`{new DirectoryInfo(UploadsDirectory).Name}`");
+                sb.AppendLine($"`{UploadsDirectory}`");
                 await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, message.MessageId);
             }
             else
@@ -212,7 +214,7 @@ namespace DwellerBot.Commands
             if (message.Photo != null && message.Photo.Length > 0)
             {
                 var biggestImage = message.Photo.Last();
-                var fakeFileName = System.IO.Path.Combine(UploadsDirectory, biggestImage.FileId);
+                var fakeFileName = Path.Combine(UploadsDirectory, biggestImage.FileId);
                 lock (_files)
                 {
                     _files.Add(new FileInfo(fakeFileName));
@@ -271,11 +273,11 @@ namespace DwellerBot.Commands
             }
 
             // Remove ignored files from the initialised files list
-            _files = _files.Where(f => !_ignoredFiles.Contains(f.FullName)).ToList();
+            _files = _files.Where(f => !_ignoredFiles.Contains(GetRelativePath(f.FullName))).ToList();
             // Add uploaded files as fake files
             foreach(var uf in _uploadedFiles)
             {
-                _files.Add(new FileInfo(System.IO.Path.Combine(UploadsDirectory, uf)));
+                _files.Add(new FileInfo(Path.Combine(UploadsDirectory, uf)));
             }
         }
         #endregion
@@ -285,6 +287,11 @@ namespace DwellerBot.Commands
         //    if (!Directory.Exists(UploadsDirectory))
         //        Directory.CreateDirectory(UploadsDirectory);
         //}
+
+        private string GetRelativePath(string FullPath)
+        {
+            return Path.GetRelativePath(AppDomain.CurrentDomain.BaseDirectory, FullPath);
+        }
     }
 
     class ReactionImageCache
