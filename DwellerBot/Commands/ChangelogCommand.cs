@@ -25,7 +25,7 @@ namespace DwellerBot.Commands
             }
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             var version = _versions.Last();
             var sb = new StringBuilder();
@@ -36,7 +36,7 @@ namespace DwellerBot.Commands
             foreach (var change in version.Changes)
                 sb.AppendLine(change);
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
         }
 
         //*bold text*

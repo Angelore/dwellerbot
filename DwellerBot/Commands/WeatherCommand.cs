@@ -24,7 +24,7 @@ namespace DwellerBot.Commands
             _apiKey = apiKey;
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             // Restore default value
             _location = "Minsk,by";
@@ -43,7 +43,7 @@ namespace DwellerBot.Commands
             var weatherContainer = JsonConvert.DeserializeObject<WeatherContainer>(responseStream.ReadToEnd());
             if (weatherContainer.cod == 404)
             {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Invalid arguments.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, "Invalid arguments.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
                 return;
             }
 
@@ -54,7 +54,7 @@ namespace DwellerBot.Commands
             sb.AppendLine("Температура: " + weatherContainer.main.temp + " *C, " + weatherContainer.weather[0].description);
             sb.AppendLine("Влажность: " + weatherContainer.main.humidity + "%");
             sb.AppendLine("Ветер: " + weatherContainer.wind.speed + " м/с");
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Default, false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Default, false, false, message.MessageId);
         }
 
         public async Task<Stream> GetWeather()

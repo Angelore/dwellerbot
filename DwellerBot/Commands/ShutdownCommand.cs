@@ -14,18 +14,17 @@ namespace DwellerBot.Commands
             _dwellerBot = dwellerBot;
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
-            if (!DwellerBot.IsUserOwner(update.Message.From))
+            if (!DwellerBot.IsUserOwner(message.From))
                 return;
 
-	        ICommand command;
-	        if (_dwellerBot.CommandService.RegisteredCommands.TryGetValue("/savestate", out command))
-	        {
-		        await command.ExecuteAsync(update, parsedMessage);
+            if (_dwellerBot.CommandService.RegisteredCommands.TryGetValue("/savestate", out ICommand command))
+            {
+                await command.HandleMessageAsync(message, parsedMessage);
             }
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Shutting down.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(message.Chat.Id, "Shutting down.", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
 
             _dwellerBot.CancellationTokenSource.CancelAfter(100);
         }

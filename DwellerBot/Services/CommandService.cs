@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace DwellerBot.Services
 {
@@ -55,34 +56,44 @@ namespace DwellerBot.Services
             }
         }
 
-        public async Task<bool> HandleUpdate(Update update)
+        public async Task HandleUpdate(Update update)
         {
-            if (update.Message?.Text != null || update.Message?.Caption != null)
+            Task handler = update.Type switch
             {
-                Log.Logger.Debug("A message in chat {0} from user {1}: {2}", update.Message.Chat.Id, update.Message.From.Username, update.Message.Text);
+                UpdateType.Message => BotOnMessageReceived(update.Message),
+                UpdateType.EditedMessage => BotOnMessageReceived(update.Message),
+                UpdateType.CallbackQuery => BotOnCallbackQueryReceived(update.CallbackQuery),
+                _ => Task.Run(() => Log.Logger.Warning($"Unsupported update type: {update.Type}"))
+            };
+            await handler;
+        }
+
+        private async Task BotOnMessageReceived(Message message)
+        {
+            if (message?.Text != null || message?.Caption != null)
+            {
+                Log.Logger.Debug("A message in chat {0} from user {1}: {2}", message.Chat.Id, message.From.Username, message.Text);
 
                 Dictionary<string, string> parsedMessage = new Dictionary<string, string>();
                 try
                 {
-                    parsedMessage = ParseCommand(update.Message.Text ?? update.Message.Caption);
+                    parsedMessage = ParseCommand(message.Text ?? message.Caption);
                     parsedMessage.Add("interpretedCommand", InterpretCommand(parsedMessage["command"]));
 
                 }
                 catch (Exception ex)
                 {
                     Log.Logger.Error("An error has occured during message parsing. Error message: {0}", ex.Message);
-                    return false;
                 }
                 if (RegisteredCommands.ContainsKey(parsedMessage["command"]))
                 {
                     try
                     {
-                        await RegisteredCommands[parsedMessage["command"]].ExecuteAsync(update, parsedMessage);
+                        await RegisteredCommands[parsedMessage["command"]].HandleMessageAsync(message, parsedMessage);
                     }
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["command"], ex.Message);
-                        return false;
                     }
                 }
                 else if (RegisteredCommands.ContainsKey(parsedMessage["interpretedCommand"])) // Check if the command was typed in a russian layout
@@ -93,17 +104,20 @@ namespace DwellerBot.Services
                     }
                     try
                     {
-                        await RegisteredCommands[parsedMessage["interpretedCommand"]].ExecuteAsync(update, parsedMessage);
+                        await RegisteredCommands[parsedMessage["interpretedCommand"]].HandleMessageAsync(message, parsedMessage);
                     }
                     catch (Exception ex)
                     {
                         Log.Logger.Error("An error has occured during {0} command. Error message: {1}", parsedMessage["interpretedCommand"], ex.Message);
-                        return false;
                     }
                 }
             }
 
-            return true;
+        }
+
+        private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
+        {
+            throw new NotImplementedException();
         }
 
         private readonly Regex _fullCommandRegex = new Regex(@"(?<=^/\w+)@\w+"); // Returns bot name from command (/com@botname => @botname)
@@ -145,9 +159,6 @@ namespace DwellerBot.Services
             var rusCharSet = @"абвгдеёжзийклмнопрстуфхцчшщъьыэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЫЭЮЯ\""№;:?/.,";
             var engCharSet = @"f,dult`;pbqrkvyjghcnea[wxio]ms'.zF<DULT~:PBQRKVYJGHCNEA{WXIO}MS'>Z\@#$^&|/?";
 
-            var a = rusCharSet.Length;
-            var b = engCharSet.Length;
-            
             string result = "";
 
             for (var i = 0; i < inputCommand.Length; i++)

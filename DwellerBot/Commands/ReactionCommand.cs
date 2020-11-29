@@ -51,57 +51,57 @@ namespace DwellerBot.Commands
             _lastUsedFile = null;
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             if (_files.Count == 0)
             {
                 await
-                    Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                    Bot.SendTextMessageAsync(message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, message.MessageId);
                 return;
             }
 
             if (parsedMessage.ContainsKey("message") && !string.IsNullOrEmpty(parsedMessage["message"]))
             {
-                var message = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
+                var messageList = parsedMessage["message"].Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList();
 
-                switch (message[0])
+                switch (messageList[0])
                 {
                     case "ignorelast":
-                        await IgnoreLastSubCommand(update);
+                        await IgnoreLastSubCommand(message);
                         break;
                     case "set":
-                        var folderName = message.Count >= 2 ? message[1] : "";
-                        await SelectReactionFromSetSubCommand(update, folderName);
+                        var folderName = messageList.Count >= 2 ? messageList[1] : "";
+                        await SelectReactionFromSetSubCommand(message, folderName);
                         break;
                     case "add":
-                        await AddImageSubCommand(update);
+                        await AddImageSubCommand(message);
                         break;
                     case "help":
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id,
+                        await Bot.SendTextMessageAsync(message.Chat.Id,
                             "Reaction command without arguments returns a random image." + Environment.NewLine +
                             "Parmeters:" + Environment.NewLine +
                             "`ignorelast` - adds the latest image to the blacklist" + Environment.NewLine +
                             "`set` - returns a list of currently loaded sets (folders). `set setname` returns an image from the set" + Environment.NewLine +
                             "`add` - adds an image to the list. The command needs to be a caption on an uncompressed image",
-                            ParseMode.Markdown, false, false, update.Message.MessageId);
+                            ParseMode.Markdown, false, false, message.MessageId);
                         break;
                     default:
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(message.Chat.Id, "Unrecognized arguments", ParseMode.Markdown, false, false, message.MessageId);
                         break;
                 }
             }
             else
             {
-                await DefaultReactionSubCommand(update, _files);
+                await DefaultReactionSubCommand(message, _files);
             }
         }
 
-        async Task DefaultReactionSubCommand(Update update, List<FileInfo> files)
+        async Task DefaultReactionSubCommand(Message message, List<FileInfo> files)
         {
             if (files.Count == 0)
             {
                 Log.Logger.Warning("The reaction command was called on a folder which contains 0 valid files.");
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, "No files available.", ParseMode.Markdown, false, false, message.MessageId);
                 return;
             }
 
@@ -115,8 +115,8 @@ namespace DwellerBot.Commands
                 {
                     // It is recommended by telegram team that the chataction should be send if the operation is expected to take some time,
                     // which is not the case if you use an image from telegram servers, so this better stay deactivated.
-                    // await Bot.SendChatAction(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    await Bot.SendPhotoAsync(update.Message.Chat.Id, new InputOnlineFile(_sentFiles[files[ind].FullName]), null, ParseMode.Default, false, update.Message.MessageId);
+                    // await Bot.SendChatAction(message.Chat.Id, ChatAction.UploadPhoto);
+                    await Bot.SendPhotoAsync(message.Chat.Id, new InputOnlineFile(_sentFiles[files[ind].FullName]), null, ParseMode.Default, false, message.MessageId);
                     return;
                 }
                 catch (Exception ex)
@@ -131,11 +131,11 @@ namespace DwellerBot.Commands
             {
                 try
                 {
-                    await Bot.SendChatActionAsync(update.Message.Chat.Id, ChatAction.UploadPhoto);
-                    var message = await Bot.SendPhotoAsync(update.Message.Chat.Id, new InputOnlineFile(fs, files[ind].Name), null, ParseMode.Default, false, update.Message.MessageId);
+                    await Bot.SendChatActionAsync(message.Chat.Id, ChatAction.UploadPhoto);
+                    var responseMessage = await Bot.SendPhotoAsync(message.Chat.Id, new InputOnlineFile(fs, files[ind].Name), null, ParseMode.Default, false, message.MessageId);
                     lock (_sentFiles)
                     {
-                        _sentFiles.Add(files[ind].FullName, message.Photo.Last().FileId);
+                        _sentFiles.Add(files[ind].FullName, responseMessage.Photo.Last().FileId);
                     }
                 }
                 catch (Exception ex)
@@ -146,9 +146,9 @@ namespace DwellerBot.Commands
             }
         }
 
-        async Task IgnoreLastSubCommand(Update update)
+        async Task IgnoreLastSubCommand(Message message)
         {
-            if (DwellerBot.IsUserOwner(update.Message.From))
+            if (DwellerBot.IsUserOwner(message.From))
             {
                 if (!string.IsNullOrEmpty(_lastUsedFile))
                 {
@@ -173,17 +173,17 @@ namespace DwellerBot.Commands
                         Log.Logger.Debug("Last file was not present in _files.");
 
                     _lastUsedFile = null;
-                    await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Last sent file has been added to ignored files.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                    await Bot.SendTextMessageAsync(message.Chat.Id, "Last sent file has been added to ignored files.", ParseMode.Markdown, false, false, message.MessageId);
                     return;
                 }
             }
             else
             {
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "Only the bot owner can use this command.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, "Only the bot owner can use this command.", ParseMode.Markdown, false, false, message.MessageId);
             }
         }
 
-        async Task SelectReactionFromSetSubCommand(Update update, string folderName)
+        async Task SelectReactionFromSetSubCommand(Message message, string folderName)
         {
             if (string.IsNullOrEmpty(folderName))
             {
@@ -199,19 +199,19 @@ namespace DwellerBot.Commands
                     }
                 }
                 sb.AppendLine($"`{new DirectoryInfo(UploadsDirectory).Name}`");
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, message.MessageId);
             }
             else
             {
-                await DefaultReactionSubCommand(update, _files.Where(f => f.Directory.Name == folderName).ToList());
+                await DefaultReactionSubCommand(message, _files.Where(f => f.Directory.Name == folderName).ToList());
             }
         }
 
-        async Task AddImageSubCommand(Update update)
+        async Task AddImageSubCommand(Message message)
         {
-            if (update.Message.Photo != null && update.Message.Photo.Length > 0)
+            if (message.Photo != null && message.Photo.Length > 0)
             {
-                var biggestImage = update.Message.Photo.Last();
+                var biggestImage = message.Photo.Last();
                 var fakeFileName = System.IO.Path.Combine(UploadsDirectory, biggestImage.FileId);
                 lock (_files)
                 {
@@ -219,10 +219,10 @@ namespace DwellerBot.Commands
                     _sentFiles.Add(fakeFileName, biggestImage.FileId);
                     _uploadedFiles.Add(biggestImage.FileId);
                 }
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "The image has been added to the list.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, "The image has been added to the list.", ParseMode.Markdown, false, false, message.MessageId);
             }
             else
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, "No images were found in the message.", ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, "No images were found in the message.", ParseMode.Markdown, false, false, message.MessageId);
         }
 
         #region ISaveable

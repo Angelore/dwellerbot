@@ -15,13 +15,13 @@ namespace DwellerBot.Commands
             _dwellerBot = dwellerBot;
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             var sb = new StringBuilder();
             sb.AppendLine("Launch time: " + _dwellerBot.LaunchTime.ToUniversalTime());
             sb.AppendLine("Commands processed: " + _dwellerBot.CommandsProcessed);
             sb.AppendLine("Errors: " + _dwellerBot.ErrorCount);
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace DwellerBot.Commands
             _rng = new Random();
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             var rtdRegex = new Regex(@"^(\d*)d(4|6|20|100)");
 
@@ -33,20 +33,20 @@ namespace DwellerBot.Commands
                         (diceEdges == 4 || diceEdges == 6 || diceEdges == 20 || diceEdges == 100))
                     {
                         var sb = new StringBuilder();
-                        sb.AppendLine(update.Message.From.FirstName + " rolled the dice.");
+                        sb.AppendLine(message.From.FirstName + " rolled the dice.");
                         for (var index = 0; index < numberOfDice; index++)
                         {
                             sb.AppendLine("Dice " + (index + 1) + ": " + (_rng.Next(diceEdges) + 1));
                         }
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), ParseMode.Markdown, false, false, message.MessageId);
                         return;
                     }
                 }
             }
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id,
+            await Bot.SendTextMessageAsync(message.Chat.Id,
                 "Format: Number of dice (*1-6*) + *d* + Number of sides (*4|6|20|100*)." + Environment.NewLine +
-                "Example: *2d6*", ParseMode.Markdown, false, false, update.Message.MessageId);
+                "Example: *2d6*", ParseMode.Markdown, false, false, message.MessageId);
         }
     }
 }

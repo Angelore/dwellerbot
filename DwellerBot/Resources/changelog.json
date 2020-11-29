@@ -40,7 +40,7 @@
         "description": "Actual release 🎉",
         "changes": [
             "- Moved to netcore 5.0",
-            ""
+            "- Moved to cloud hosting"
         ]
     }
 ]

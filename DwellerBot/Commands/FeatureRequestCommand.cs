@@ -22,7 +22,7 @@ namespace DwellerBot.Commands
             _requests = new Dictionary<int, string>();
         }
 
-        public override async Task ExecuteAsync(Update update, Dictionary<string, string> parsedMessage)
+        public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             if (parsedMessage.ContainsKey("message"))
             {
@@ -43,30 +43,30 @@ namespace DwellerBot.Commands
                             result += string.Format("{0}: {1}{2}", pair.Key, pair.Value, Environment.NewLine);
                         }
 
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, message.MessageId);
                         return;
                     }
                 }
                 else if (args.Length == 2)
                 {
                     int index;
-                    if (args[0].Equals("close") && int.TryParse(args[1], out index) && _requests.ContainsKey(index) && DwellerBot.IsUserOwner(update.Message.From))
+                    if (args[0].Equals("close") && int.TryParse(args[1], out index) && _requests.ContainsKey(index) && DwellerBot.IsUserOwner(message.From))
                     {
                         _requests[index] = "[Done] " + _requests[index];
                         var result = string.Format("{0}: {1}{2}", index, _requests[index], Environment.NewLine);
-                        await Bot.SendTextMessageAsync(update.Message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, update.Message.MessageId);
+                        await Bot.SendTextMessageAsync(message.Chat.Id, result, Telegram.Bot.Types.Enums.ParseMode.Default, false, false, message.MessageId);
                         return;
                     }
                 }
 
-                _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", update.Message.From.FirstName, parsedMessage["message"]));
+                _requests.Add(_requestIndex, string.Format("{0} asked for: {1}", message.From.FirstName, parsedMessage["message"]));
                 _requestIndex++;
 
-                await Bot.SendTextMessageAsync(update.Message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+                await Bot.SendTextMessageAsync(message.Chat.Id, string.Format("A request has been added under #{0}", _requestIndex - 1), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
                 return;
             }
 
-            await Bot.SendTextMessageAsync(update.Message.Chat.Id, "You have to describe your request :)\nlist - opened requests\ndone - completed requests", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, update.Message.MessageId);
+            await Bot.SendTextMessageAsync(message.Chat.Id, "You have to describe your request :)\nlist - opened requests\ndone - completed requests", Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
         }
 
         public void SaveState()
