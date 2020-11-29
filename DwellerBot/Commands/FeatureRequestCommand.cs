@@ -74,7 +74,7 @@ namespace DwellerBot.Commands
             if (_requests.Count == 0)
                 return;
 
-            using (var sw = new StreamWriter(new FileStream(Path.GetFullPath(_featureRequestsFilePath), FileMode.Create, FileAccess.Write)))
+            using (var sw = new StreamWriter(new FileStream(_featureRequestsFilePath, FileMode.Create, FileAccess.Write)))
             {
                 var config = JsonConvert.SerializeObject(_requests, Formatting.Indented);
                 sw.WriteLine(config);
@@ -85,7 +85,7 @@ namespace DwellerBot.Commands
 
         public void LoadState()
         {
-            using (var sr = new StreamReader(new FileStream(Path.GetFullPath(_featureRequestsFilePath), FileMode.OpenOrCreate)))
+            using (var sr = new StreamReader(new FileStream(_featureRequestsFilePath, FileMode.OpenOrCreate)))
             {
                 var str = sr.ReadToEnd();
                 if (str.Length > 0)
