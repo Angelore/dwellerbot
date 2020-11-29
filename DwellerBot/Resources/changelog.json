@@ -36,11 +36,12 @@
     },
     {
         "versionNumber": "1.0.0",
-        "releaseDate": "",
+        "releaseDate": "29.11.2020",
         "description": "Actual release 🎉",
         "changes": [
             "- Moved to netcore 5.0",
-            "- Moved to cloud hosting"
+            "- Moved to cloud hosting",
+            "- Some changes for linux support"
         ]
     }
 ]
