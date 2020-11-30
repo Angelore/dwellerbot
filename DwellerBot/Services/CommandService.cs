@@ -117,13 +117,20 @@ namespace DwellerBot.Services
 
         private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await RegisteredCommands[GetCommandFromCallbackData(callbackQuery.Data)].HandleCallbackQueryAsync(callbackQuery);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error("An error has occured during a callback query. Callback data: {0}. Error message: {1}", callbackQuery.Data, ex.Message);
+            }
         }
 
         private readonly Regex _fullCommandRegex = new Regex(@"(?<=^/\w+)@\w+"); // Returns bot name from command (/com@botname => @botname)
         private readonly Regex _commandRegex = new Regex(@"^/\w+");              // Returns command (/com => /com)
 
-        internal Dictionary<string, string> ParseCommand(string input)
+        private Dictionary<string, string> ParseCommand(string input)
         {
             var result = new Dictionary<string, string>();
 
@@ -154,7 +161,7 @@ namespace DwellerBot.Services
         }
 
         // Since the foward slash is a service symbol for the bot, it should be ignored while parsing the command
-        public static string InterpretCommand(string inputCommand, bool ignoreForwardSlash = true)
+        private string InterpretCommand(string inputCommand, bool ignoreForwardSlash = true)
         {
             var rusCharSet = @"абвгдеёжзийклмнопрстуфхцчшщъьыэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЫЭЮЯ\""№;:?/.,";
             var engCharSet = @"f,dult`;pbqrkvyjghcnea[wxio]ms'.zF<DULT~:PBQRKVYJGHCNEA{WXIO}MS'>Z\@#$^&|/?";
@@ -175,6 +182,11 @@ namespace DwellerBot.Services
             }
 
             return result;
+        }
+
+        private string GetCommandFromCallbackData(string data)
+        {
+            return data.Split(';')[0];
         }
     }
 }

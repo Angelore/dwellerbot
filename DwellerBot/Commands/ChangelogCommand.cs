@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using DwellerBot.Models;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,13 +7,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using DwellerBot.Models;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DwellerBot.Commands
 {
     class ChangelogCommand : CommandBase
     {
-        private List<AppVersion> _versions;
+        private readonly List<AppVersion> _versions;
+        private const string CommandName = "/changelog";
+        private const string PreviousVersion = "Previous";
+        private const string NextVersion = "Next";
+        private const string PreviousVersionToken = "p";
+        private const string NextVersionToken = "n";
 
         public ChangelogCommand(TelegramBotClient bot) : base(bot)
         {
@@ -28,6 +35,51 @@ namespace DwellerBot.Commands
         public override async Task HandleMessageAsync(Message message, Dictionary<string, string> parsedMessage)
         {
             var version = _versions.Last();
+            await Bot.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: GetTextMessage(version),
+                parseMode: ParseMode.Markdown,
+                replyToMessageId: message.MessageId,
+                replyMarkup: GetKeyboardMarkup(version.VersionNumber));
+        }
+
+        public override async Task HandleCallbackQueryAsync(CallbackQuery callbackQuery)
+        {
+            var versionString = callbackQuery.Data.Split(';')[1];
+            var direction = callbackQuery.Data.Split(';')[2];
+            AppVersion version = null;
+            switch (direction) {
+                case PreviousVersionToken:
+                    var i = _versions.FindIndex(v => v.VersionNumber.Equals(versionString));
+                    version = i > 0 ? _versions[i-1] : _versions.First();
+                    break;
+                case NextVersionToken:
+                    i = _versions.FindIndex(v => v.VersionNumber.Equals(versionString));
+                    version = i < _versions.Count - 1 ? _versions[i+1] : _versions.Last();
+                    break;
+            }
+
+            if (versionString.Equals(version.VersionNumber)) {
+                var response = direction == NextVersionToken ?
+                    "Reached the latest version" :
+                    "Reached the frist version";
+                await Bot.AnswerCallbackQueryAsync(
+                    callbackQueryId: callbackQuery.Id,
+                    text: response
+                );
+                return;
+            }
+
+            await Bot.EditMessageTextAsync(
+                chatId: callbackQuery.Message.Chat.Id,
+                messageId: callbackQuery.Message.MessageId,
+                text: GetTextMessage(version),
+                parseMode: ParseMode.Markdown,
+                replyMarkup: GetKeyboardMarkup(version.VersionNumber));
+        }
+
+        private string GetTextMessage(AppVersion version)
+        {
             var sb = new StringBuilder();
             sb.AppendLine($"Ver. *{version.VersionNumber}* :: {version.ReleaseDate}");
             if (version.Description?.Length > 0)
@@ -36,15 +88,17 @@ namespace DwellerBot.Commands
             foreach (var change in version.Changes)
                 sb.AppendLine(change);
 
-            await Bot.SendTextMessageAsync(message.Chat.Id, sb.ToString(), Telegram.Bot.Types.Enums.ParseMode.Markdown, false, false, message.MessageId);
+            return sb.ToString();
         }
 
-        //*bold text*
-        //_italic text_
-        //[text](http://www.example.com/)
-        //`inline fixed-width code`
-        //```text
-        //pre - formatted fixed-width code block
-        //```
+        private InlineKeyboardMarkup GetKeyboardMarkup(string payload) {
+            return new InlineKeyboardMarkup(new[]
+                {
+                new [] {
+                    InlineKeyboardButton.WithCallbackData(PreviousVersion, $"{CommandName};{payload};{PreviousVersionToken}"),
+                    InlineKeyboardButton.WithCallbackData(NextVersion, $"{CommandName};{payload};{NextVersionToken}"),
+                }
+            });
+        }
     }
 }
