@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DwellerBot.Commands
 {
     class RtdCommand : CommandBase
     {
+        public const string CommandName = "/rtd";
         private Random _rng;
 
         public RtdCommand(TelegramBotClient bot):base(bot)
@@ -47,6 +49,34 @@ namespace DwellerBot.Commands
             await Bot.SendTextMessageAsync(message.Chat.Id,
                 "Format: Number of dice (*1-6*) + *d* + Number of sides (*4|6|20|100*)." + Environment.NewLine +
                 "Example: *2d6*", ParseMode.Markdown, false, false, message.MessageId);
+        }
+
+        private InlineKeyboardMarkup GetDiceSidesKeyboardMarkup()
+        {
+            return new InlineKeyboardMarkup(new[]
+                {
+                new [] {
+                    InlineKeyboardButton.WithCallbackData("4", $"{CommandName};4"),
+                    InlineKeyboardButton.WithCallbackData("6", $"{CommandName};6"),
+                    InlineKeyboardButton.WithCallbackData("20", $"{CommandName};20"),
+                    InlineKeyboardButton.WithCallbackData("100", $"{CommandName};100"),
+                }
+            });
+        }
+
+        private InlineKeyboardMarkup GetDiceNumberKeyboardMarkup()
+        {
+            return new InlineKeyboardMarkup(new[]
+                {
+                new [] {
+                    InlineKeyboardButton.WithCallbackData("1", $"{CommandName};1"),
+                    InlineKeyboardButton.WithCallbackData("2", $"{CommandName};2"),
+                    InlineKeyboardButton.WithCallbackData("3", $"{CommandName};3"),
+                    InlineKeyboardButton.WithCallbackData("4", $"{CommandName};4"),
+                    InlineKeyboardButton.WithCallbackData("5", $"{CommandName};5"),
+                    InlineKeyboardButton.WithCallbackData("6", $"{CommandName};6"),
+                }
+            });
         }
     }
 }
