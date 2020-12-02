@@ -14,7 +14,7 @@ namespace DwellerBot.Commands
 {
     class ChangelogCommand : CommandBase
     {
-        public const string CommandName = "/changelog";
+        public static string CommandName = "/changelog";
         private readonly List<AppVersion> _versions;
         private const string PreviousVersion = "Previous";
         private const string NextVersion = "Next";
