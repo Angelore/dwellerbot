@@ -39,9 +39,19 @@
         "releaseDate": "29.11.2020",
         "description": "Actual release 🎉",
         "changes": [
-            "- Moved to netcore 5.0",
+            "- Moved to .net 5.0",
             "- Moved to cloud hosting",
             "- Some changes for linux support"
+        ]
+    },
+    {
+        "versionNumber": "1.0.1",
+        "releaseDate": "in progress",
+        "description": "Keyboard update",
+        "changes": [
+            "- Added inline keyboards to come commands",
+            "- Changelog now has the ability to see previous versions",
+            "- Rolling the dice doesn't require regex knowledge"
         ]
     }
 ]

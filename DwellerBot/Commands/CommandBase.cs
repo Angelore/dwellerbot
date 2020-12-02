@@ -19,5 +19,10 @@ namespace DwellerBot.Commands
         {
             throw new NotImplementedException();
         }
+
+        public virtual Task HandleCallbackQueryAsync(CallbackQuery callbackQuery)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
