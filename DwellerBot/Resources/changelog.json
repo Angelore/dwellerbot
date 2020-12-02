@@ -46,8 +46,8 @@
     },
     {
         "versionNumber": "1.0.1",
-        "releaseDate": "in progress",
-        "description": "Keyboard update",
+        "releaseDate": "02.12.2020",
+        "description": "Keyboard update ⌨",
         "changes": [
             "- Added inline keyboards to come commands",
             "- Changelog now has the ability to see previous versions",
