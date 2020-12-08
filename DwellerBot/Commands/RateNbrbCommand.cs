@@ -21,9 +21,9 @@ namespace DwellerBot.Commands
 {
     class RateNbrbCommand: CommandBase
     {
-        private const string CurrencyListUrl = @"http://www.nbrb.by/API/ExRates/Currencies";
-        private const string CurrencyRatesApi = @"http://www.nbrb.by/API/ExRates/Rates?onDate={0}&Periodicity=0";
-        private const string CurrencyRateApi = @"http://www.nbrb.by/API/ExRates/Rates/{0}?onDate={1}";
+        private const string CurrencyListUrl = @"https://www.nbrb.by/API/ExRates/Currencies";
+        private const string CurrencyRatesApi = @"https://www.nbrb.by/API/ExRates/Rates?onDate={0}&Periodicity=0";
+        private const string CurrencyRateApi = @"https://www.nbrb.by/API/ExRates/Rates/{0}?onDate={1}";
         private readonly List<string> _defaultCurrenciesList  = new List<string> {"usd","eur","rub"};
         private const string BaseCurrency = "byn";
 
