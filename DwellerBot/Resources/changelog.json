@@ -51,7 +51,8 @@
         "changes": [
             "- Added inline keyboards to come commands",
             "- Changelog now has the ability to see previous versions",
-            "- Rolling the dice doesn't require regex knowledge"
+            "- Rolling the dice doesn't require regex knowledge",
+            "- Hotfix 09/12 - Changed /rate api to https"
         ]
     }
 ]
